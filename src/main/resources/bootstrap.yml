@@ -1,0 +1,58 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /signIn
+spring:
+  application:
+    name: czhl-service-sign-in
+  cloud:
+    nacos:
+      server-addr: 192.168.10.251:8848 #开发环境
+      discovery:
+        enabled: true
+        metadata:
+          management:
+            context-path: ${server.servlet.context-path}/actuator
+      config:
+        enabled: true
+        file-extension: yaml
+        context-path: /nacos
+        shared-configs[0]:
+          data-id: common-redis.yaml
+          group: COMMON_GROUP
+          refresh: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/info?useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+  profiles:
+    active: test
+
+logging:
+  #  config: classpath:logback-spring.xml
+  file:
+    # 日志
+    name: ./log/${spring.application.name}.log
+  level:
+    root: info
+    #修改nacos日志打印级别
+    com.alibaba.nacos.client.config.impl: WARN
+
+
+ks:
+  ip: 192.168.10.200
+  port: 80
+  username: admin
+  password: admin123456@
+  sn: aaa
+  register-face-lib-name: 1
+  ws:
+    #Websocket抓拍信息主动上报端口
+    port: 8887
+  search:
+    #人脸对比度
+    score: 75
+
+
+
