@@ -225,13 +225,13 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids()).toJavaList(String.class);
         }
 
-        List<String> list = new ArrayList<>();
+        Set<String> userSet = new HashSet<>();
         if (StringUtils.hasText(signInTask.getUserUuids())) {
-            list = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
+            userSet.addAll(JSONObject.parseArray(signInTask.getUserUuids(), String.class));
         }
 
-        list.addAll(userUuids);
-        signInTask.setUserUuids(JSONObject.toJSONString(list));
+        userSet.addAll(userUuids);
+        signInTask.setUserUuids(JSONObject.toJSONString(userSet));
 
         if (updateById(signInTask)) {
             //任务,允许人脸签到
