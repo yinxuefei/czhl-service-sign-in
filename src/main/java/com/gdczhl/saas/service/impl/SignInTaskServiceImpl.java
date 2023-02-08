@@ -39,6 +39,7 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -86,6 +87,9 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     @Autowired
     private AreaRemoteService areaRemoteService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
 
     @Override
@@ -455,7 +459,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             signInTaskPageVo.setPollingMode(signInTask.getPollingMode().getCode());
             String pageVoWeek = getPageVoWeek(signInTask);
             signInTaskPageVo.setWeekDays(pageVoWeek);
-            signInTaskPageVo.setTimePeriod(SignTasks.getTaskNameResult(signInTask));
+            signInTaskPageVo.setTimePeriod(SignTasks.getPeriodNameResult(signInTask));
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
             signInTaskPageVo.setDatePeriod(Objects.nonNull(signInTask.getTaskEndDate()) ?
                     signInTask.getTaskStartDate().format(dateTimeFormatter) + "-" + signInTask.getTaskEndDate().format(dateTimeFormatter) :
@@ -740,7 +744,49 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
                 .like(StringUtils.hasText(deviceUuid),SignInTask::getDeviceUuids,deviceUuid)
                 .orderByAsc(SignInTask::getTaskStartTime)
                 .orderByAsc(SignInBase::getTaskEndTime);
-        return list(qw);
+
+        //过滤节假日
+        return list(qw).stream().filter(signInTask -> {
+                    if (signInTask.getFilterFestival()) {
+                        JuheBean vacation = JuheUtil.getVacation(stringRedisTemplate, LocalDate.now());
+                        if (vacation.getResult().getStatus() == null) {
+                            //为工作日
+                            return true;
+                        }
+                        return false;
+                    }
+                    return true;
+                })
+                //过滤周期内
+                .filter(signInTask -> {
+                    PollingModeEnum pollingMode = signInTask.getPollingMode();
+                    if (pollingMode.equals(PollingModeEnum.DAY)) {
+                        List<String> list = JSONObject.parseArray(signInTask.getWeek(), String.class);
+                        List<LocalDate> collect = list.stream().map(s -> {
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                            return LocalDate.parse(s, dateTimeFormatter);
+                        }).collect(Collectors.toList());
+                        //包含日期 保留
+                        if (collect.contains(date)) {
+                            return true;
+                        }
+                        return false;
+                    }
+                    else {
+                        List<Integer> list = JSONObject.parseArray(signInTask.getWeek(), Integer.class);
+                        List<LocalDate> periodDate = TimeUtil.getPeriodDate(signInTask.getTaskStartDate(), signInTask.getTaskEndDate());
+
+                        for (LocalDate localDate : periodDate) {
+                            int week = localDate.getDayOfWeek().getValue();
+                            if (list.contains(week)) {
+                                //包含星期,保留
+                                return true;
+                            }
+                            return false;
+                        }
+                        return false;
+                    }
+                }).collect(Collectors.toList());
     }
 
     @Override

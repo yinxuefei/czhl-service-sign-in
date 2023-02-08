@@ -46,6 +46,8 @@ public class ThirdTaskController {
             MoreConfig moreConfigs = JSONObject.parseObject(signInTask.getMoreConfig(), MoreConfig.class);
             if (moreConfigs != null && moreConfigs.getAutoRun()) {
                 reportTaskVo.setPop(true);
+            }else {
+                reportTaskVo.setPop(false);
             }
             return reportTaskVo;
         }).collect(Collectors.toList());

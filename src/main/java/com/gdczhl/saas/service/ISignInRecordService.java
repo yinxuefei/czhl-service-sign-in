@@ -53,4 +53,6 @@ public interface ISignInRecordService extends IService<SignInRecord> {
     SignInRecord getTaskByDateUuid(LocalDate date,LocalTime taskStartTime, LocalTime taskEndTime, String uuid,
                                          String operatorUuid);
     void updateByUuid(SignInRecord record);
+
+    List<SignInRecord> getByStatisticsUuid(String statisticsUuid);
 }

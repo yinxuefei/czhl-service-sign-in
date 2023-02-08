@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -56,8 +57,9 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+
     @Override
-    public List<DayTaskVo> daySignTask(LocalDate date,String operatorUuid) {
+    public List<DayTaskVo> daySignTask(LocalDate date, String operatorUuid) {
 
         List<DayTaskVo> result = new ArrayList<>();
         //为负责人的任务
@@ -67,8 +69,8 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
             DayTaskVo dayTaskVo = CzBeanUtils.copyProperties(task, DayTaskVo::new);
             dayTaskVo.setUuid(task.getUuid());
             List<String> users = new ArrayList<>();
-            if (StringUtils.hasText(task.getUserUuids())){
-                users = getUsersByJson(task.getUserUuids(),String.class);
+            if (StringUtils.hasText(task.getUserUuids())) {
+                users = getUsersByJson(task.getUserUuids(), String.class);
             }
             dayTaskVo.setAllSignInCount(users.size());
             SignStatistics statistics = signStatisticsService.getStatisticsByTaskUuid(task.getUuid(), date);
@@ -83,8 +85,8 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
                     continue;
                 }
                 // 任务进行中
-                dayTaskVo.setSignInCount(getSignInCount(statistics.getUuid(),SignStatusEnum.SINGED));
-                dayTaskVo.setNotSignInCount(getSignInCount(statistics.getUuid(),SignStatusEnum.NOT_SING));
+                dayTaskVo.setSignInCount(getSignInCount(statistics.getUuid(), SignStatusEnum.SINGED));
+                dayTaskVo.setNotSignInCount(getSignInCount(statistics.getUuid(), SignStatusEnum.NOT_SING));
                 result.add(dayTaskVo);
                 continue;
             }
@@ -97,8 +99,8 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
 
     private Integer getSignInCount(String uuid, SignStatusEnum signStatusEnum) {
         LambdaUpdateWrapper<SignInRecord> qw = new LambdaUpdateWrapper<>();
-        qw.eq(SignInRecord::getSignStatisticsUuid,uuid)
-                .eq(SignInRecord::getStatus,signStatusEnum);
+        qw.eq(SignInRecord::getSignStatisticsUuid, uuid)
+                .eq(SignInRecord::getStatus, signStatusEnum);
         return signInRecordService.list(qw).size();
     }
 
@@ -107,37 +109,48 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
     }
 
     @Override
-    public List<SignTaskStatusVo> weekSignTask(LocalDate startDate, LocalDate endDate ,String userUuid) {
+    public List<SignTaskStatusVo> weekSignTask(LocalDate startDate, LocalDate endDate, String userUuid) {
         List<LocalDate> dateList = TimeUtil.getPeriodDate(startDate, endDate);
         List<SignTaskStatusVo> result = Lists.newArrayList();
 
         for (LocalDate localDate : dateList) {
-            List<SignStatistics> signStatistics = signStatisticsService.getTodayTasks(localDate,userUuid);
+            List<SignInTask> todayTasks = signInTaskService.getManageTodayTasks(localDate, userUuid);
             SignTaskStatusVo vo = new SignTaskStatusVo();
             vo.setNowDate(localDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            vo.setIsSignIn(getTodayStatus(signStatistics));
+            vo.setIsSignIn(getTodayStatus(todayTasks, localDate));
             result.add(vo);
         }
         return result;
     }
 
-    private static Integer getTodayStatus(List<SignStatistics> signStatistics) {
-        if (CollectionUtils.isEmpty(signStatistics)){
+
+    private Integer getTodayStatus(List<SignInTask> signInTasks, LocalDate localDate) {
+        if (CollectionUtils.isEmpty(signInTasks)) {
             //无任务
             return 2;
         }
-        for (SignStatistics statistics : signStatistics) {
-            if (StringUtils.hasText(statistics.getNotUser())) {
-                //有未签人员
-                return 1;
+        for (SignInTask signInTask : signInTasks) {
+            SignStatistics statistics = signStatisticsService.getStatisticsByTaskUuid(signInTask.getUuid(), localDate);
+            if (statistics == null) {
+                //正常记录
+                return 0;
             }
-            if (StringUtils.hasText(statistics.getReUser())) {
-                //有补签人员
+            List<SignInRecord> signInRecordList = signInRecordService.getByStatisticsUuid(statistics.getUuid());
+            List<SignInRecord> collect = signInRecordList.stream().filter(signInRecord -> {
+                if (signInRecord.getStatus().equals(SignStatusEnum.RESIGN) || signInRecord.getStatus().equals(SignStatusEnum.NOT_SING)) {
+                    return true;
+                }
+                return false;
+            }).collect(Collectors.toList());
+
+            if (CollectionUtils.isEmpty(collect)) {
+                return 0;
+            } else {
                 return 1;
             }
         }
-        return 0;
-    }
+        return null;
+}
 
 
     @Override
@@ -151,10 +164,10 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
         SignStatistics signStatistics = signStatisticsService.getStatisticsByTaskUuid(taskUuid, date);
 
         if (signStatistics == null) {
-                // 任务未开始
-                BeanUtils.copyProperties(page, result, "records");
-                result.setRecords(pageVoRecord);
-                return result;
+            // 任务未开始
+            BeanUtils.copyProperties(page, result, "records");
+            result.setRecords(pageVoRecord);
+            return result;
         }
         //进行中
         Page<SignInRecord> signInRecordPage = signInRecordService.getPageByStatisticsUuid(signStatistics.getUuid(),

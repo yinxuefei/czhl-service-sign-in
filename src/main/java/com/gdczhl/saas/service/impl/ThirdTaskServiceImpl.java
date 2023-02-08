@@ -139,50 +139,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @Override
     public List<SignInTask> todayTasks(LocalDate date,String deviceUuid) {
         //1.查询当日所有任务
-        List<SignInTask> signList = signInTaskService.getTodayTasks(date,deviceUuid);
-
-        //过滤节假日
-        return signList.stream().filter(signInTask -> {
-                    if (signInTask.getFilterFestival()) {
-                        JuheBean vacation = JuheUtil.getVacation(stringRedisTemplate, LocalDate.now());
-                        if (vacation.getResult().getStatus() == null) {
-                            //为工作日
-                            return true;
-                        }
-                        return false;
-                    }
-                    return true;
-                })
-                //过滤周期内
-                .filter(signInTask -> {
-                    PollingModeEnum pollingMode = signInTask.getPollingMode();
-                    if (pollingMode.equals(PollingModeEnum.DAY)) {
-                        List<String> list = JSONObject.parseArray(signInTask.getWeek(), String.class);
-                        List<LocalDate> collect = list.stream().map(s -> {
-                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                            return LocalDate.parse(s, dateTimeFormatter);
-                        }).collect(Collectors.toList());
-                        //包含日期 保留
-                        if (collect.contains(date)) {
-                            return true;
-                        }
-                        return false;
-                        }
-                     else {
-                        List<Integer> list = JSONObject.parseArray(signInTask.getWeek(), Integer.class);
-                        List<LocalDate> periodDate = TimeUtil.getPeriodDate(signInTask.getTaskStartDate(), signInTask.getTaskEndDate());
-
-                        for (LocalDate localDate : periodDate) {
-                            int week = localDate.getDayOfWeek().getValue();
-                            if (list.contains(week)) {
-                                //包含星期,保留
-                                return true;
-                            }
-                            return false;
-                        }
-                        return false;
-                    }
-                }).collect(Collectors.toList());
+        return signInTaskService.getTodayTasks(date,deviceUuid);
     }
 
 

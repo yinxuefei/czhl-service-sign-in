@@ -3,6 +3,7 @@ package com.gdczhl.saas.controller.weapp;
 import com.gdczhl.saas.controller.weapp.bo.vo.*;
 
 import com.gdczhl.saas.service.ISignStatisticsService;
+import com.gdczhl.saas.service.IThirdTaskService;
 import com.gdczhl.saas.service.remote.IWeappTaskService;
 
 
@@ -34,6 +35,7 @@ public class TaskController {
 
     @Autowired
     private IWeappTaskService weappTaskService;
+
 
     @GetMapping("weekSignTask")
     @ApiOperation("签到状态")

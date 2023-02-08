@@ -183,4 +183,10 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
         LambdaUpdateWrapper<SignInRecord> eq = new LambdaUpdateWrapper<SignInRecord>().eq(SignInRecord::getUuid, record.getUuid());
         update(record,eq);
     }
+
+    @Override
+    public List<SignInRecord> getByStatisticsUuid(String uuid) {
+        LambdaQueryWrapper<SignInRecord> eq = new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getSignStatisticsUuid, uuid);
+        return list(eq);
+    }
 }

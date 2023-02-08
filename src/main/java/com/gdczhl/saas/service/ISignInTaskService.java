@@ -183,7 +183,7 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     List<SignInTask> getTodayTasks(LocalDate date,String deviceUuid);
 
-    List<SignInTask> getManageTodayTasks(LocalDate date,String operatorUuid);
+    List<SignInTask> getManageTodayTasks(LocalDate date,String ManagerUuid);
 
     List<SignInTask> getUserTodayTasks(LocalDate date,String operatorUuid);
 }
