@@ -1,6 +1,6 @@
 kind: pipeline
 type: docker
-name: czhl-service-wechat
+name: czhl-service-sign-in
 
 trigger:
   branch:
