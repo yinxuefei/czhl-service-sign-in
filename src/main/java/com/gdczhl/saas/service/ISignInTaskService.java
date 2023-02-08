@@ -1,24 +1,27 @@
 package com.gdczhl.saas.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.gdczhl.saas.bo.feign.user.UserVo;
-import com.gdczhl.saas.controller.external.pojo.bo.SignInTaskSaveBo;
-import com.gdczhl.saas.controller.external.pojo.bo.SignInTaskUpdateBo;
-import com.gdczhl.saas.controller.external.pojo.vo.*;
+import com.gdczhl.saas.pojo.bo.signInTask.SignInTaskSaveBo;
+import com.gdczhl.saas.pojo.bo.signInTask.SignInTaskUpdateBo;
+import com.gdczhl.saas.pojo.bo.signInTask.TaskUserPageVo;
+import com.gdczhl.saas.pojo.vo.DevicePageVo;
+import com.gdczhl.saas.pojo.vo.UserPageVo;
+import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskPageVo;
+import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskSaveVo;
+import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskVo;
+import com.gdczhl.saas.pojo.vo.signInTask.TaskNameVo;
 import com.gdczhl.saas.entity.SignInTask;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gdczhl.saas.vo.PageVo;
-import com.gdczhl.saas.vo.ResponseVo;
-import com.gdczhl.saas.vo.feign.iot.response.DeviceInfoVo;
-import io.swagger.annotations.ApiParam;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author hkx
@@ -29,6 +32,7 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 添加任务
+     *
      * @param saveBo
      * @return
      */
@@ -36,12 +40,14 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 获取任务名称集合
+     *
      * @return
      */
-    Map<String,Set<String>> getTaskNameList();
+    List<TaskNameVo> getTaskNameList(Integer status);
 
     /**
      * 根据任务uuid 添加用户
+     *
      * @param userUuids
      * @param uuid
      * @return
@@ -50,6 +56,7 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 根据任务uuid 设置设备信息
+     *
      * @param deviceUuids
      * @param uuid
      * @return
@@ -58,6 +65,7 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 根据任务uuid获取任务
+     *
      * @param uuid
      * @return
      */
@@ -65,13 +73,15 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 根据uuids获取多个任务
+     *
      * @param uuids
      * @return key 任务uuid
      */
-    Map<String,SignInTask> getTasksByUuids(List<String> uuids);
+    Map<String, SignInTask> getTasksByUuids(List<String> uuids);
 
     /**
      * 修改任务信息
+     *
      * @param updateBo
      * @return
      */
@@ -79,16 +89,17 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 任务分页查询
+     *
      * @param name
-     * @param taskName
      * @param pageNo
      * @param pageSize
      * @return
      */
-    Page<SignInTask> pageTask(String name, String taskName, Integer pageNo, Integer pageSize);
+    Page<SignInTask> pageTask(String name, Integer type, Integer pageNo, Integer pageSize);
 
     /**
      * 任务启用禁用
+     *
      * @param uuid
      * @param enable
      * @return
@@ -97,23 +108,25 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 根据任务uuid获取任务vo
+     *
      * @param uuid
      * @return
      */
-    SignInTaskSaveVo getTaskVoByUuid(String uuid);
+    SignInTaskVo getTaskVoByUuid(String uuid);
 
     /**
      * 做任务分页(pc端显示)
+     *
      * @param name
-     * @param taskName
      * @param pageNo
      * @param pageSize
      * @return
      */
-    PageVo<SignInTaskPageVo> pageTaskVo(String name, String taskName, Integer pageNo, Integer pageSize);
+    PageVo<SignInTaskPageVo> pageTaskVo(String name, Integer taskStatus, Integer pageNo, Integer pageSize);
 
     /**
      * 删除任务
+     *
      * @param uuid
      * @return
      */
@@ -121,25 +134,28 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 用户分页
+     *
      * @param uuid
      * @param pageNo
      * @param pageSize
      * @return
      */
-    PageVo<UserPageVo> pageUser(String uuid, String name, String organizationName, Integer pageNo, Integer pageSize);
+    PageVo<UserPageVo> pageUser(String uuid, String name, String organizationUuid, Integer pageNo, Integer pageSize);
 
     /**
      * 设备分页
+     *
      * @param uuid
      * @param pageNo
      * @param pageSize
      * @return
      */
-    PageVo<DevicePageVo> devicePage(String uuid, Integer pageNo, Integer pageSize,String name,
-                                   String address);
+    PageVo<DevicePageVo> devicePage(String uuid, Integer pageNo, Integer pageSize, String name,
+                                    String number, String areaCode);
 
     /**
      * 删除用户
+     *
      * @param uuid
      * @param userUuids
      * @return
@@ -148,6 +164,7 @@ public interface ISignInTaskService extends IService<SignInTask> {
 
     /**
      * 删除设备
+     *
      * @param uuid
      * @param devices
      * @return
@@ -157,4 +174,16 @@ public interface ISignInTaskService extends IService<SignInTask> {
     Set<String> getOrganizationNameList();
 
     Set<String> getAreaAddressNameList();
+
+    boolean deleteAllUser(String uuid);
+
+    boolean deleteAllDevice(String uuid);
+
+    List<TaskUserPageVo> userPage(List<String> userUuids);
+
+    List<SignInTask> getTodayTasks(LocalDate date,String deviceUuid);
+
+    List<SignInTask> getManageTodayTasks(LocalDate date,String operatorUuid);
+
+    List<SignInTask> getUserTodayTasks(LocalDate date,String operatorUuid);
 }

@@ -11,52 +11,63 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 @Log4j2
 public class JuheUtil {
 
-    private static String REDIS_VOCATION = "vocation";
+    private static String REDIS_VOCATION = "vocation_";
 
     private final static String JUHE_KEY = "88f8dc0f8bc4292b424ca21696983363";
 
     /**
      * 获取本日是否节假日详情说明
+     *
      * @param stringRedisTemplate
      * @return
      */
-    public static JuheBean getVacation(StringRedisTemplate stringRedisTemplate){
-        String jsonStr = stringRedisTemplate.opsForValue().get(REDIS_VOCATION);
-        if(!BaseUtil.isEmpty(jsonStr)){
+    public static JuheBean getVacation(StringRedisTemplate stringRedisTemplate, LocalDate localDate) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String date = localDate.format(dateTimeFormatter);
+
+        String jsonStr = stringRedisTemplate.opsForValue().get(REDIS_VOCATION + date);
+        if (!BaseUtil.isEmpty(jsonStr)) {
             return JSONObject.parseObject(jsonStr, JuheBean.class);
         }
         String VACATION_URL = "http://apis.juhe.cn/fapig/calendar/day.php?date=DATE&key=";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String date = simpleDateFormat.format(System.currentTimeMillis());
-        String url = VACATION_URL.replaceAll("DATE",date) + JUHE_KEY;
+        String url = VACATION_URL.replaceAll("DATE", date) + JUHE_KEY;
         RestTemplate restTemplate = new RestTemplate();
         JuheBean result = restTemplate.getForObject(url, JuheBean.class);
-        if(result==null){
+        if (result == null) {
             return null;
         }
-        stringRedisTemplate.opsForValue().set(REDIS_VOCATION,JSONObject.toJSONString(result),getDistanceTomorrowSeconds(),TimeUnit.SECONDS);
+        stringRedisTemplate.opsForValue().set(REDIS_VOCATION + date, JSONObject.toJSONString(result),
+                getDistanceTomorrowSeconds(localDate), TimeUnit.SECONDS);
         return result;
 
     }
 
     /**
      * 获取距离明天  00:00:00 差 多少秒
+     *
      * @return
      */
-    private static long getDistanceTomorrowSeconds(){
-        LocalDateTime tomorrowTime = LocalDateTime.of(LocalDate.now().plusDays(1l), LocalTime.MIN);
+    public static long getDistanceTomorrowSeconds(LocalDate date) {
+        LocalDateTime tomorrowTime = LocalDateTime.of(date.plusDays(1l), LocalTime.MIN);
+        long result = (tomorrowTime.toEpochSecond(ZoneOffset.of("+8")) * 1000 - System.currentTimeMillis()) / 1000;
+        System.out.println(result);
+        return result;
+    }
+
+    public static long getDistanceTomorrowSeconds(LocalDateTime tomorrowTime) {
         long result = (tomorrowTime.toEpochSecond(ZoneOffset.of("+8")) * 1000 - System.currentTimeMillis()) / 1000;
         System.out.println(result);
         return result;
     }
 
     public static void main(String[] args) {
-        getDistanceTomorrowSeconds();
+//        getDistanceTomorrowSeconds();
 //        Date date = new Date( );
 //        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
 //        System.out.println(df.format(date));

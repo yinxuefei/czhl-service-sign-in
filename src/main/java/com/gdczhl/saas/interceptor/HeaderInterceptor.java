@@ -2,6 +2,7 @@ package com.gdczhl.saas.interceptor;
 
 
 import com.gdczhl.saas.exceptions.LoginException;
+import com.gdczhl.saas.utils.ContextCache;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;

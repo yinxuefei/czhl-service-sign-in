@@ -1,7 +1,7 @@
 package com.gdczhl.saas.config;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import com.gdczhl.saas.interceptor.ContextCache;
+import com.gdczhl.saas.utils.ContextCache;
 import com.gdczhl.saas.interceptor.HeaderInterceptor;
 import com.gdczhl.saas.utils.IdUtils;
 import lombok.extern.slf4j.Slf4j;

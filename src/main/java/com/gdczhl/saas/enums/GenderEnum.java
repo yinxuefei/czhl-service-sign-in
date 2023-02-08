@@ -10,8 +10,8 @@ import lombok.Getter;
 @ApiModel(value = "性别")
 public enum GenderEnum {
 
-    BOY(1,"男"),
-    GIRL(2,"女");
+    BOY(1, "男"),
+    GIRL(2, "女");
 
 
     @EnumValue

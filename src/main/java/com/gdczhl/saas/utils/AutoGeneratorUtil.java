@@ -47,7 +47,7 @@ public class AutoGeneratorUtil {
         // Step4：策略配置（数据库表配置）
         StrategyConfig strategy = new StrategyConfig.Builder()
                 // 生成哪些表的类
-                .addInclude("device")
+                .addInclude("sign_statistics")
                 // 开启大写命名
                 .enableCapitalMode()
                 // lombok,字段下划线驼峰转换

@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author HKX
  */
-@FeignClient(name = "czhl-service-base",url = "http://192.168.10.251:18080",path = "/base/feign")
+@FeignClient(name = "czhl-service-base", path = "/base/feign")
 public interface BaseServiceRemote {
 
     //根据用户uuid列表获取用户信息（如果有需求要获取用户头像的用这个）
@@ -40,7 +40,6 @@ public interface BaseServiceRemote {
     //根据机构uuid获取机构信息
     @GetMapping("/institution/get")
     ResponseVo<InstitutionVo> get(@RequestParam(value = "uuid") String uuid);
-
 
 
 }

@@ -2,14 +2,17 @@ package com.gdczhl.saas.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
 import java.util.Date;
+
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author hkx
@@ -45,8 +48,14 @@ public class Device extends BaseEntity {
     private String areaAddress;
 
     /**
+     * 地址uuid
+     */
+    private String areaUuid;
+    /**
      * 是否启用
      */
     private String enable;
+
+    private String areaCode;
 
 }

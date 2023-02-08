@@ -2,37 +2,35 @@ package com.gdczhl.saas.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.gdczhl.saas.bo.feign.area.AreaBriefInfoVo;
+import com.gdczhl.saas.mq.messages.areaPlus.UserDeviceFlagSaveListBo;
+import com.gdczhl.saas.service.remote.AreaRemoteService;
+import com.gdczhl.saas.utils.ContextCache;
+import com.gdczhl.saas.interceptor.HeaderInterceptor;
+import com.gdczhl.saas.pojo.bo.signInTask.TaskUserPageVo;
+import com.gdczhl.saas.pojo.vo.DevicePageVo;
+import com.gdczhl.saas.pojo.vo.UserPageVo;
 import com.gdczhl.saas.bo.feign.organization.OrganizationVo;
 import com.gdczhl.saas.bo.feign.user.UserVo;
-import com.gdczhl.saas.controller.external.pojo.DatePeriod;
-import com.gdczhl.saas.controller.external.pojo.MoreConfig;
-import com.gdczhl.saas.controller.external.pojo.TimePeriod;
-import com.gdczhl.saas.controller.external.pojo.bo.SignInTaskSaveBo;
-import com.gdczhl.saas.controller.external.pojo.bo.SignInTaskUpdateBo;
-import com.gdczhl.saas.controller.external.pojo.vo.DevicePageVo;
-import com.gdczhl.saas.controller.external.pojo.vo.SignInTaskPageVo;
-import com.gdczhl.saas.controller.external.pojo.vo.SignInTaskSaveVo;
-import com.gdczhl.saas.controller.external.pojo.vo.UserPageVo;
-import com.gdczhl.saas.entity.BaseEntity;
-import com.gdczhl.saas.entity.Device;
-import com.gdczhl.saas.entity.SignInTask;
-import com.gdczhl.saas.entity.User;
-import com.gdczhl.saas.enums.EResultCode;
-import com.gdczhl.saas.enums.PollingModeEnum;
-import com.gdczhl.saas.enums.SignInModeEnum;
-import com.gdczhl.saas.enums.WeekEnum;
+import com.gdczhl.saas.pojo.DatePeriod;
+import com.gdczhl.saas.pojo.MoreConfig;
+import com.gdczhl.saas.pojo.TimePeriod;
+import com.gdczhl.saas.pojo.bo.signInTask.SignInTaskSaveBo;
+import com.gdczhl.saas.pojo.bo.signInTask.SignInTaskUpdateBo;
+import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskPageVo;
+import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskVo;
+import com.gdczhl.saas.pojo.vo.signInTask.TaskNameVo;
+import com.gdczhl.saas.entity.*;
+import com.gdczhl.saas.enums.*;
 import com.gdczhl.saas.mapper.SignInTaskMapper;
-import com.gdczhl.saas.service.IDeviceService;
-import com.gdczhl.saas.service.ISignInTaskService;
+import com.gdczhl.saas.mq.SyncProducer;
+import com.gdczhl.saas.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.gdczhl.saas.service.IUserService;
 import com.gdczhl.saas.service.remote.BaseServiceRemote;
 import com.gdczhl.saas.service.remote.IotRemoteService;
-import com.gdczhl.saas.utils.CzBeanUtils;
-import com.gdczhl.saas.utils.ListUtil;
-import com.gdczhl.saas.utils.SignTasks;
-import com.gdczhl.saas.utils.TimeUtil;
+import com.gdczhl.saas.utils.*;
 import com.gdczhl.saas.vo.PageVo;
 import com.gdczhl.saas.vo.ResponseVo;
 import com.gdczhl.saas.vo.feign.iot.response.DeviceInfoVo;
@@ -48,6 +46,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -56,7 +55,7 @@ import java.util.stream.Collectors;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author hkx
@@ -79,11 +78,23 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     @Autowired
     private IotRemoteService iotRemoteService;
 
+    @Autowired
+    private SyncProducer syncProducer;
+
+    @Autowired
+    private ISignInRecordService signInRecordService;
+
+    @Autowired
+    private AreaRemoteService areaRemoteService;
+
 
     @Override
     public boolean add(SignInTaskSaveBo saveBo) {
+
+        String institutionUuid = getInstitutionUuid();
+        saveBo.setInstitutionUuid(institutionUuid);
         SignInTask signInTask = new SignInTask();
-        BeanUtils.copyProperties(saveBo,signInTask);
+        BeanUtils.copyProperties(saveBo, signInTask);
         List<String> weekDays = saveBo.getWeekDays();
         signInTask.setWeek(JSONObject.toJSONString(weekDays));
         MoreConfig moreConfig = saveBo.getMoreConfig();
@@ -93,8 +104,8 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         //添加负责人
         MoreConfig.Manager manager = moreConfig.getManager();
-        if (null!= manager){
-            if (manager.getIsManager()){
+        if (null != manager) {
+            if (manager.getIsManager()) {
                 List<String> managerUuids = manager.getManagerUuids();
                 saveUser(managerUuids);
             }
@@ -102,45 +113,101 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         //添加汇报推送人
         MoreConfig.ReportPush reportPush = moreConfig.getReportPush();
-        if (null!= reportPush){
-            if (reportPush.getIsReportPush()){
+        if (null != reportPush) {
+            if (reportPush.getIsReportPush()) {
                 List<String> pusherUuids = reportPush.getPusherUuids();
                 saveUser(pusherUuids);
             }
         }
 
+        if (isExpires(signInTask)) {
+            signInTask.setStatus(false);
+        }
+
         return save(signInTask);
+
     }
 
-    @Override
-    public Map<String,Set<String>> getTaskNameList() {
-        Map<String,Set<String>> result = new HashMap<>();
-        //单日循环
-        Set<String> daySet = getDaySetOrWeekSet(PollingModeEnum.DAY.getCode());
-        result.put(PollingModeEnum.DAY.getDescription(),daySet);
-        Set<String> weekSet = getDaySetOrWeekSet(PollingModeEnum.WEEK.getCode());
-        result.put(PollingModeEnum.WEEK.getDescription(),weekSet);
-        return result;
+    private static String getInstitutionUuid() {
+        return ContextCache.getAttribute(HeaderInterceptor.INSTITUTION_UUID).toString();
     }
 
-    private Set<String> getDaySetOrWeekSet(Integer code) {
-        HashSet<String> result = new HashSet<>();
+    private static Boolean isExpires(SignInTask signInTask) {
+        if (LocalDate.now().isAfter(signInTask.getTaskEndDate())) {
+            //已失效
+            return true;
+        }
+        return false;
+    }
+
+//    private void saveSignStatisticsTask(SignInTask signInTask) {
+//        PollingModeEnum pollingMode = signInTask.getPollingMode();
+//        List<String> weekDays = JSONObject.parseArray(signInTask.getWeek(), String.class);
+//        Boolean filterFestival = signInTask.getFilterFestival();
+//        LocalDate taskStartDate = signInTask.getTaskStartDate();
+//        LocalDate taskEndDate = signInTask.getTaskEndDate();
+//        ArrayList<LocalDate> dateList = Lists.newArrayList();
+//        if (pollingMode.equals(PollingModeEnum.DAY)){
+//            for (String weekDay : weekDays) {
+//                LocalDate date = LocalDate.parse(weekDay, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+//                if (filterFestival){
+//                    JuheBean vacation = JuheUtil.getVacation(stringRedisTemplate, date);
+//                    if (vacation != null && vacation.getResult().getStatus().equals(JuheDayStatusEnum.FESTIVAL.getCode())){
+//                        dateList.add(date);
+//                    }
+//                }else {
+//                    dateList.add(date);
+//                }
+//            }
+//        }
+//
+//        if (pollingMode.equals(PollingModeEnum.WEEK)){
+//            List<Integer> weeks = weekDays.stream().map(s -> Integer.valueOf(s)).collect(Collectors.toList());
+//            List<LocalDate> dates = TimeUtil.getPeriodDate(taskStartDate,taskEndDate);
+//            for (LocalDate date : dates) {
+//                if (weeks.contains(date.getDayOfWeek().getValue())){
+//                    if (filterFestival){
+//                        JuheBean vacation = JuheUtil.getVacation(stringRedisTemplate, date);
+//                    if (vacation != null && vacation.getResult().getStatus().equals(JuheDayStatusEnum.FESTIVAL.getCode())){
+//                        dateList.add(date);
+//                        }
+//                    }else {
+//                        dateList.add(date);
+//                    }
+//                }
+//            }
+//        }
+//
+//
+//        for (LocalDate localDate : dateList) {
+//            SignStatistics signStatistics = new SignStatistics();
+//            BeanUtils.copyProperties(signInTask,signStatistics);
+//            signStatistics.setTaskName(SignTasks.getTaskNameResult(signInTask));
+//            signStatistics.setAllUser(signInTask.getUserUuids());
+//            signStatistics.setCreateDate(localDate);
+//            signStatisticsService.save(signStatistics);
+//        }
+//
+//    }
+
+
+    public List<TaskNameVo> getTaskNameList(Integer status) {
+        List<TaskNameVo> result = new ArrayList<>();
         LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<SignInTask>()
-                .eq(SignInTask::getStatus, true)
-                .eq(Objects.nonNull(code),SignInTask::getPollingMode,PollingModeEnum.getByCode(code))
+                .eq(Objects.nonNull(status), SignInTask::getStatus, status)
+                .eq(SignInTask::getInstitutionUuid,getInstitutionUuid())
                 .orderByDesc(BaseEntity::getCreateTime);
         List<SignInTask> list = list(qw);
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return result;
         }
+
         list.forEach(signInTask -> {
-            LocalTime taskStartTime = signInTask.getTaskStartTime();
-            LocalTime taskEndTime = signInTask.getTaskEndTime();
-            String name = signInTask.getName();
-            String taskName = signInTask.getTaskName();
-            String taskNameResult = SignTasks.getTaskNameResult(name, taskName, taskStartTime, taskEndTime,
-                    DateTimeFormatter.ofPattern("HH:mm"));
-            result.add(taskNameResult);
+            String taskNameResult = SignTasks.getTaskNameResult(signInTask);
+            TaskNameVo vo = new TaskNameVo();
+            vo.setUuid(signInTask.getUuid());
+            vo.setPeriodName(taskNameResult);
+            result.add(vo);
         });
         return result;
     }
@@ -148,58 +215,111 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     @Override
     public boolean setUsers(List<String> userUuids, String uuid) {
         SignInTask signInTask = getTaskByUuid(uuid);
-        Assert.notNull(signInTask,"任务未开启");
+        Assert.notNull(signInTask, "任务未开启");
         log.info("保存user信息到本地库");
         saveUser(userUuids);
-        signInTask.setUserUuids(JSONObject.toJSONString(userUuids));
-        return updateById(signInTask);
+        List<String> deviceUuids = new ArrayList<>();
+
+        //查设备
+        if (StringUtils.hasText(signInTask.getDeviceUuids())) {
+            deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids()).toJavaList(String.class);
+        }
+
+        List<String> list = new ArrayList<>();
+        if (StringUtils.hasText(signInTask.getUserUuids())) {
+            list = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
+        }
+
+        list.addAll(userUuids);
+        signInTask.setUserUuids(JSONObject.toJSONString(list));
+
+        if (updateById(signInTask)) {
+            //任务,允许人脸签到
+            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids,ReportEnum.ADD);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void saveUser(List<String> userUuids) {
+        if (CollectionUtils.isEmpty(userUuids)){
+            return;
+        }
         //查本地库
         List<String> nativeUserList = userService.list().stream().map(user -> user.getUuid()).collect(Collectors.toList());
         //求新增 本地未添加用户
         List<String> newUserUuidList = ListUtil.difference(nativeUserList, userUuids);
         ResponseVo<List<UserVo>> responseVoUser = baseServiceRemote.listByUuidsWithGetFacePhoto(newUserUuidList);
         List<UserVo> userVoList = SignTasks.checkHttpResponse(responseVoUser);
-            for (UserVo userVo : userVoList) {
-                User user = new User();
-                ResponseVo<List<OrganizationVo>> ResponseVoOrganization = baseServiceRemote.listOrganizationByUuids(Arrays.asList(userVo.getOrganizationUuid()));
-                OrganizationVo organizationVo = SignTasks.checkHttpResponse(ResponseVoOrganization).get(0);
-                BeanUtils.copyProperties(userVo,user);
-                user.setOrganizationName(organizationVo.getName());
-                userService.save(user);
-            }
+        for (UserVo userVo : userVoList) {
+            User user = new User();
+            ResponseVo<List<OrganizationVo>> ResponseVoOrganization = baseServiceRemote.listOrganizationByUuids(Arrays.asList(userVo.getOrganizationUuid()));
+            OrganizationVo organizationVo = SignTasks.checkHttpResponse(ResponseVoOrganization).get(0);
+            BeanUtils.copyProperties(userVo, user);
+            user.setOrganizationName(organizationVo.getName());
+            userService.save(user);
         }
+    }
 
 
     @Override
     public boolean setDevices(List<String> deviceUuids, String uuid) {
         SignInTask signInTask = getTaskByUuid(uuid);
-        Assert.notNull(signInTask,"任务未开启");
+        Assert.notNull(signInTask, "任务未开启");
         log.info("保存设备信息到本地库");
         saveDevice(deviceUuids);
-        List<String> snList = Arrays.asList();
-        ResponseVo<List<DeviceInfoVo>> iotResponse = iotRemoteService.getDeviceListByUuidList(deviceUuids);
-        if (iotResponse.getCode()== EResultCode.SUCCESS.getCode() && Objects.nonNull(iotResponse.getData())){
-            List<DeviceInfoVo> deviceInfoVoList = iotResponse.getData();
-            snList = deviceInfoVoList.stream().map(deviceInfoVo -> deviceInfoVo.getNumberSn()).collect(Collectors.toList());
+        Set<String> devUuids = new HashSet<>();
+
+        if (StringUtils.hasText(signInTask.getDeviceUuids())) {
+            devUuids.addAll(JSONObject.parseArray(signInTask.getDeviceUuids(), String.class));
         }
-        signInTask.setDeviceUuids(JSONObject.toJSONString(deviceUuids));
-        signInTask.setDeviceSns(JSONObject.toJSONString(snList));
-        return updateById(signInTask);
+
+        List<String> userUuids = new ArrayList<>();
+        if (StringUtils.hasText(signInTask.getUserUuids())) {
+            userUuids = JSONObject.parseArray(signInTask.getUserUuids()).toJavaList(String.class);
+        }
+
+        devUuids.addAll(deviceUuids);
+        signInTask.setDeviceUuids(JSONObject.toJSONString(devUuids));
+
+        if (updateById(signInTask)) {
+            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids, ReportEnum.ADD);
+            return true;
+        }
+        return false;
+    }
+
+    private void addOrDeleteFaceReport(List<String> deviceUuids, SignInTask signInTask, List<String> userUuids,
+                                       ReportEnum report) {
+        if (JSONObject.parseArray(signInTask.getSignInMode(), Integer.class).contains(SignInModeEnum.FACE.getCode())) {
+
+            if (!CollectionUtils.isEmpty(userUuids) && !CollectionUtils.isEmpty(deviceUuids)) {
+                //下发人脸
+                syncProducer.addOrDeleteUserDeviceFlagSaveList(deviceUuids, userUuids, report.getCode());
+            }
+        }
     }
 
     private void saveDevice(List<String> deviceUuids) {
-        List<String> nativeDeviceList = deviceService.list().stream().map(user -> user.getUuid()).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(deviceUuids)){
+            return;
+        }
+
+        List<Device> list = deviceService.list();
+        List<String> nativeDeviceList =
+                list.stream().map(user -> user.getUuid()).collect(Collectors.toList());
         //求差集
         List<String> newDeviceUuidList = ListUtil.difference(nativeDeviceList, deviceUuids);
         ResponseVo<List<DeviceInfoVo>> responseVo = iotRemoteService.getDeviceListByUuidList(newDeviceUuidList);
-        if (responseVo.getCode()== EResultCode.SUCCESS.getCode() && Objects.nonNull(responseVo.getData())){
+        if (responseVo.getCode() == EResultCode.SUCCESS.getCode() && Objects.nonNull(responseVo.getData())) {
             List<DeviceInfoVo> deviceInfoVoList = responseVo.getData();
-            for (DeviceInfoVo deviceInfoVo: deviceInfoVoList) {
+            for (DeviceInfoVo deviceInfoVo : deviceInfoVoList) {
                 Device device = new Device();
-                BeanUtils.copyProperties(deviceInfoVo,device);
+                BeanUtils.copyProperties(deviceInfoVo, device);
+                ResponseVo<AreaBriefInfoVo> remoteServiceInfoByUuid = areaRemoteService.findInfoByUuid(deviceInfoVo.getAreaUuid());
+                AreaBriefInfoVo flagSaveListBo = SignTasks.checkHttpResponse(remoteServiceInfoByUuid);
+                device.setAreaCode(flagSaveListBo.getAreaCode());
                 deviceService.save(device);
             }
         }
@@ -209,134 +329,174 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     public SignInTask getTaskByUuid(String uuid) {
         LambdaQueryWrapper<SignInTask> eq = new LambdaQueryWrapper<SignInTask>()
                 .eq(SignInTask::getUuid, uuid)
-                .eq(SignInTask::getStatus,true)
                 .last("limit 1");
-        return  getOne(eq);
+        return getOne(eq);
     }
 
     @Override
-    public Map<String,SignInTask> getTasksByUuids(List<String> uuids) {
+    public Map<String, SignInTask> getTasksByUuids(List<String> uuids) {
         LambdaQueryWrapper<SignInTask> eq = new LambdaQueryWrapper<SignInTask>()
-                .in(SignInTask::getUuid, uuids)
-                .eq(SignInTask::getStatus,true);
+                .in(SignInTask::getUuid, uuids);
         List<SignInTask> list = list(eq);
-        HashMap<String,SignInTask> result = new HashMap<>();
+        HashMap<String, SignInTask> result = new HashMap<>();
         for (SignInTask signInTask : list) {
-            result.put(signInTask.getUuid(),signInTask);
+            result.put(signInTask.getUuid(), signInTask);
         }
         return result;
     }
 
     @Override
     public Boolean updateTaskByUpdateBo(SignInTaskUpdateBo updateBo) {
-        String uuid = updateBo.getUuid();
-        Assert.notNull(uuid,"空参数异常");
-        SignInTask signInTask = getTaskByUuid(uuid);
-        Assert.notNull(signInTask,"任务未开启");
-        BeanUtils.copyProperties(updateBo,signInTask);
-        if (Objects.nonNull(updateBo.getWeekDays())){
+
+        SignInTask signInTask = new SignInTask();
+        updateBo.setInstitutionUuid(getInstitutionUuid());
+
+        BeanUtils.copyProperties(updateBo, signInTask);
+
+        if (updateBo.getPollingMode().equals(PollingModeEnum.DAY.getCode())) {
+            signInTask.setWeek(JSONObject.toJSONString(updateBo.getDateDays()));
+        } else {
             signInTask.setWeek(JSONObject.toJSONString(updateBo.getWeekDays()));
         }
-        if (Objects.nonNull(updateBo.getSignInMode())){
+        if (Objects.nonNull(updateBo.getSignInMode())) {
             signInTask.setSignInMode(JSONObject.toJSONString(updateBo.getSignInMode()));
         }
-        if (Objects.nonNull(updateBo.getPollingMode())){
+        if (Objects.nonNull(updateBo.getPollingMode())) {
             signInTask.setPollingMode(PollingModeEnum.getByCode(updateBo.getPollingMode()));
         }
-        if (Objects.nonNull(updateBo.getMoreConfig())){
+        if (Objects.nonNull(updateBo.getMoreConfig())) {
             signInTask.setMoreConfig(JSONObject.toJSONString(updateBo.getMoreConfig()));
+            MoreConfig moreConfig = updateBo.getMoreConfig();
+            if (moreConfig.getManager()!= null && moreConfig.getManager().getIsManager()){
+                saveUser(moreConfig.getManager().getManagerUuids());
+            }
+            if (moreConfig.getReportPush()!= null && moreConfig.getReportPush().getIsReportPush()){
+                saveUser(moreConfig.getReportPush().getPusherUuids());
+            }
+            if (moreConfig.getBodyTemperature()!= null && moreConfig.getBodyTemperature().getIsPush()){
+                saveUser(moreConfig.getBodyTemperature().getPushUuids());
+            }
         }
-        return updateById(signInTask);
+
+        return updateByUuid(signInTask);
     }
 
+    private Boolean updateByUuid(SignInTask signInTask) {
+        LambdaUpdateWrapper<SignInTask> eq = new LambdaUpdateWrapper<SignInTask>().eq(SignInTask::getUuid, signInTask.getUuid());
+        return update(signInTask,eq);
+    }
+
+//    private void deleteSignStatisticsTask(SignInTask signInTask) {
+//        LambdaQueryWrapper<SignStatistics> eq = new LambdaQueryWrapper<SignStatistics>().eq(SignStatistics::getTaskUuid, signInTask.getUuid());
+//        signStatisticsService.remove(eq);
+//    }
+
     @Override
-    public Page<SignInTask> pageTask(String name, String taskName, Integer pageNo, Integer pageSize) {
-        SignInTask signInTask = null;
+    public Page<SignInTask> pageTask(String name, Integer taskStatus, Integer pageNo, Integer pageSize) {
+
         Page<SignInTask> signInTaskPage = new Page<>(pageNo, pageSize);
-        if (!StringUtils.isEmpty(taskName)){
-            signInTask = SignTasks.parseTaskNameResult(taskName);
-        }
+
         LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<>();
-        qw.like(!StringUtils.isEmpty(name), SignInTask::getName,name)
+        qw.like(!StringUtils.isEmpty(name), SignInTask::getName, name)
+                .eq(Objects.nonNull(taskStatus), SignInTask::getStatus, taskStatus)
+                .eq(SignInTask::getInstitutionUuid,getInstitutionUuid())
                 .orderByDesc(BaseEntity::getUpdateTime)
                 .orderByDesc(BaseEntity::getCreateTime);
 
-        if (null != signInTask){
-            qw.eq(SignInTask::getTaskStartTime,signInTask.getTaskStartTime())
-                    .eq(SignInTask::getTaskEndTime,signInTask.getTaskEndTime())
-                    .eq(SignInTask::getTaskName,signInTask.getTaskName());
-        }
-        page(signInTaskPage,qw);
+        page(signInTaskPage, qw);
         return signInTaskPage;
     }
 
     @Override
     public boolean doEnable(String uuid, Boolean enable) {
         SignInTask task = getTaskByUuid(uuid);
-        if (Objects.isNull(task)){
+        if (Objects.isNull(task)) {
             throw new IllegalArgumentException("任务已被删除");
         }
-        task.setStatus(enable);
+        task.setIsEnable(enable);
         return updateById(task);
     }
 
     @Override
-    public SignInTaskSaveVo getTaskVoByUuid(String uuid) {
-        SignInTaskSaveVo result = new SignInTaskSaveVo();
+    public SignInTaskVo getTaskVoByUuid(String uuid) {
+        SignInTaskVo result = new SignInTaskVo();
         SignInTask signInTask = getTaskByUuid(uuid);
-        if (Objects.isNull(signInTask)){
+        if (Objects.isNull(signInTask)) {
             return result;
         }
         String moreConfigJson = signInTask.getMoreConfig();
         MoreConfig moreConfig = JSONObject.parseObject(moreConfigJson).toJavaObject(MoreConfig.class);
         DatePeriod datePeriod = CzBeanUtils.copyProperties(signInTask, DatePeriod::new);
         TimePeriod timePeriod = CzBeanUtils.copyProperties(signInTask, TimePeriod::new);
-        BeanUtils.copyProperties(signInTask,result);
+        BeanUtils.copyProperties(signInTask, result);
         result.setPollingMode(signInTask.getPollingMode().getCode());
-        result.setSignInMode(JSONObject.parseArray(signInTask.getSignInMode(),Integer.class));
+        result.setSignInMode(JSONObject.parseArray(signInTask.getSignInMode(), Integer.class));
         result.setMoreConfig(moreConfig);
         result.setDatePeriod(datePeriod);
         result.setTimePeriod(timePeriod);
-        result.setWeekDays(JSONObject.parseArray(signInTask.getWeek(), String.class));
+        if (signInTask.getPollingMode().equals(PollingModeEnum.WEEK)) {
+            result.setWeekDays(JSONObject.parseArray(signInTask.getWeek(), Integer.class));
+        } else {
+            result.setDateDays(JSONObject.parseArray(signInTask.getWeek(), String.class));
+        }
+
         return result;
     }
 
     @Override
-    public PageVo<SignInTaskPageVo> pageTaskVo(String name, String taskName, Integer pageNo, Integer pageSize) {
-        Page<SignInTask> signInTaskPage = pageTask(name, taskName, pageNo, pageSize);
+    public PageVo<SignInTaskPageVo> pageTaskVo(String name, Integer taskStatus, Integer pageNo, Integer pageSize) {
+        Page<SignInTask> signInTaskPage = pageTask(name, taskStatus, pageNo, pageSize);
         List<SignInTask> taskList = signInTaskPage.getRecords();
 
+        //任务列表
         List<SignInTaskPageVo> recodes = taskList.stream().map(signInTask -> {
             SignInTaskPageVo signInTaskPageVo = new SignInTaskPageVo();
-            BeanUtils.copyProperties(signInTask,signInTaskPageVo);
-            signInTaskPageVo.setPollingMode(signInTask.getPollingMode().getDescription());
+            BeanUtils.copyProperties(signInTask, signInTaskPageVo);
+            signInTaskPageVo.setPollingMode(signInTask.getPollingMode().getCode());
             String pageVoWeek = getPageVoWeek(signInTask);
             signInTaskPageVo.setWeekDays(pageVoWeek);
-            signInTaskPageVo.setTimePeriod(SignTasks.getTaskNameResult(signInTask.getName(), signInTask.getTaskName(),
-                    signInTask.getTaskStartTime(),
-                    signInTask.getTaskEndTime(), DateTimeFormatter.ofPattern("HH:mm")));
+            signInTaskPageVo.setTimePeriod(SignTasks.getTaskNameResult(signInTask));
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
             signInTaskPageVo.setDatePeriod(Objects.nonNull(signInTask.getTaskEndDate()) ?
                     signInTask.getTaskStartDate().format(dateTimeFormatter) + "-" + signInTask.getTaskEndDate().format(dateTimeFormatter) :
                     signInTask.getTaskStartDate().format(dateTimeFormatter));
-            if (StringUtils.hasText(signInTask.getUserUuids())){
-            signInTaskPageVo.setUserUuidList(JSONObject.parseArray(signInTask.getUserUuids(), String.class).size());}
-            if (StringUtils.hasText(signInTask.getDeviceUuids())){
-            signInTaskPageVo.setDeviceUuidList(JSONObject.parseArray(signInTask.getDeviceUuids(), String.class).size());}
-            String signInMode = getPageSignInMode(signInTask);
-            signInTaskPageVo.setSignInMode(signInMode);
-            if (null != signInTask.getEditor()) {
-                signInTaskPageVo.setEditor(userService.getByUserUuid(signInTask.getEditor()).getName());
-            }else {
-                signInTaskPageVo.setEditor(userService.getByUserUuid(signInTask.getCreator()).getName());
+            if (StringUtils.hasText(signInTask.getUserUuids())) {
+                signInTaskPageVo.setUserCount(JSONObject.parseArray(signInTask.getUserUuids(), String.class).size());
+            } else {
+                signInTaskPageVo.setUserCount(0);
             }
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-            signInTaskPageVo.setLastUpdateTime(signInTask.getUpdateTime() == null? signInTask.getCreateTime().format(timeFormatter): signInTask.getUpdateTime().format(timeFormatter));
+            if (StringUtils.hasText(signInTask.getDeviceUuids())) {
+                signInTaskPageVo.setDeviceCount(JSONObject.parseArray(signInTask.getDeviceUuids(), String.class).size());
+            } else {
+                signInTaskPageVo.setDeviceCount(0);
+            }
+            List<Integer> signInModes = JSONObject.parseArray(signInTask.getSignInMode(), Integer.class);
+            signInTaskPageVo.setSignInModes(signInModes);
+            if (null != signInTask.getEditor()) {
+                String editor = signInTask.getEditor();
+                User user = userService.getByUserUuid(editor);
+                if (user == null) {
+                    saveUser(Arrays.asList(editor));
+                    user = userService.getByUserUuid(editor);
+                }
+                signInTaskPageVo.setEditor(user.getName());
+            } else {
+                String creator = signInTask.getCreator();
+                User user = userService.getByUserUuid(creator);
+                if (user == null) {
+                    saveUser(Arrays.asList(creator));
+                    user = userService.getByUserUuid(creator);
+                }
+                signInTaskPageVo.setEditor(user.getName());
+            }
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
+            signInTaskPageVo.setLastUpdateTime(signInTask.getUpdateTime() == null ? signInTask.getCreateTime().format(timeFormatter) : signInTask.getUpdateTime().format(timeFormatter));
+            signInTaskPageVo.setStatus(signInTask.getStatus() ? 1 : 0);
             return signInTaskPageVo;
         }).collect(Collectors.toList());
 
         PageVo<SignInTaskPageVo> result = new PageVo<>();
-        BeanUtils.copyProperties(signInTaskPage,result,"records");
+        BeanUtils.copyProperties(signInTaskPage, result, "records");
         result.setRecords(recodes);
         return result;
     }
@@ -344,16 +504,32 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     @Override
     public boolean taskDelete(String uuid) {
         SignInTask signInTask = getTaskByUuid(uuid);
-        if (Objects.isNull(signInTask)){
+        if (Objects.isNull(signInTask)) {
             return false;
         }
-        return removeById(signInTask);
+        List<String> userUuids = new ArrayList<>();
+        List<String> deviceUuids = new ArrayList<>();
+        if (StringUtils.hasText(signInTask.getUserUuids())){
+            userUuids = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
+        }
+        if (StringUtils.hasText(signInTask.getDeviceUuids())){
+            deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids(), String.class);
+        }
+
+        if (removeById(signInTask)){
+            addOrDeleteFaceReport(deviceUuids, signInTask,userUuids,ReportEnum.DELETE);
+            //删除统计
+            signInRecordService.deleteByTaskUuid(signInTask.getUuid());
+            return true;
+        }
+        return false;
     }
 
     @Override
     public PageVo<UserPageVo> pageUser(String uuid, String name,
-                                      String organizationName, Integer pageNo, Integer pageSize) {
+                                      String organizationUuid, Integer pageNo, Integer pageSize) {
         Page<User> userPage = new Page<>(pageNo, pageSize);
+        PageVo<UserPageVo> result = new PageVo<>();
         List<String> userUuidList = Lists.newArrayList();
         SignInTask signInTask = getTaskByUuid(uuid);
         String userUuidsJson = signInTask.getUserUuids();
@@ -361,71 +537,111 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             userUuidList = JSONObject.parseArray(userUuidsJson,String.class);
         }
         LambdaQueryWrapper<User> qw = new LambdaQueryWrapper<User>()
-                .in(CollectionUtils.isEmpty(userUuidList), User::getUuid, userUuidList)
                 .like(StringUtils.hasText(name),User::getName,name)
-                .like(StringUtils.hasText(organizationName),User::getOrganizationName,organizationName)
+                .like(StringUtils.hasText(organizationUuid),User::getOrganizationUuid,organizationUuid)
                 .orderByDesc(User::getCreateTime);
 
+        if (CollectionUtils.isEmpty(userUuidList)){
+            return result;
+        }else {
+            qw.in(User::getUuid,userUuidList);
+        }
+
         userService.page(userPage,qw);
-        PageVo<UserPageVo> result = new PageVo<>();
         BeanUtils.copyProperties(userPage,result);
-        ArrayList<UserPageVo> records = new ArrayList<>();
-        BeanUtils.copyProperties(userPage.getRecords(),records);
+        List<UserPageVo> records = CzBeanUtils.copyListProperties(userPage.getRecords(), UserPageVo::new);
         result.setRecords(records);
         return result;
     }
 
     @Override
-    public PageVo<DevicePageVo> devicePage(String uuid, Integer pageNo, Integer pageSize,String name,
-                                           String address) {
+    public PageVo<DevicePageVo> devicePage(String uuid, Integer pageNo, Integer pageSize, String name,
+                                           String number, String areaCode) {
         Page<Device> userPage = new Page<>(pageNo, pageSize);
+        PageVo<DevicePageVo> result = new PageVo<>();
         List<String> deviceUuidList = Lists.newArrayList();
         SignInTask signInTask = getTaskByUuid(uuid);
         String deviceUuidJson = signInTask.getDeviceUuids();
-        if (StringUtils.hasText(deviceUuidJson)){
-            deviceUuidList = JSONObject.parseArray(deviceUuidJson,String.class);
+        if (StringUtils.hasText(deviceUuidJson)) {
+            deviceUuidList = JSONObject.parseArray(deviceUuidJson, String.class);
         }
+
+        if (CollectionUtils.isEmpty(deviceUuidList)) {
+            return result;
+        }
+
         LambdaQueryWrapper<Device> qw = new LambdaQueryWrapper<Device>()
-                .in(CollectionUtils.isEmpty(deviceUuidList), Device::getUuid, deviceUuidList)
-                .like(StringUtils.hasText(name),Device::getName,name)
-                .eq(StringUtils.hasText(address),Device::getAreaAddress,address)
-                .orderByDesc(Device::getCreateTime);
-        deviceService.page(userPage,qw);
-        PageVo<DevicePageVo> result = new PageVo<>();
-        BeanUtils.copyProperties(userPage,result);
-        ArrayList<DevicePageVo> records = new ArrayList<>();
-        BeanUtils.copyProperties(userPage.getRecords(),records);
+                .in(!CollectionUtils.isEmpty(deviceUuidList), Device::getUuid, deviceUuidList)
+                .like(StringUtils.hasText(name), Device::getName, name)
+                .likeRight(StringUtils.hasText(areaCode), Device::getAreaUuid, areaCode)
+                .like(StringUtils.hasText(number), Device::getNumber, number);
+
+        deviceService.page(userPage, qw);
+
+        BeanUtils.copyProperties(userPage, result);
+        List<DevicePageVo> records = CzBeanUtils.copyListProperties(userPage.getRecords(), DevicePageVo::new);
         result.setRecords(records);
         return result;
     }
 
     @Override
     public boolean deleteTaskUser(String uuid, List<String> userUuids) {
+
         SignInTask signInTask = getTaskByUuid(uuid);
-        Assert.notNull(signInTask,EResultCode.NullDataFail.getMessage());
+        Assert.notNull(signInTask, EResultCode.NullDataFail.getMessage());
         String uuidsJson = signInTask.getUserUuids();
         List<String> userUuidList = JSONObject.parseArray(uuidsJson, String.class);
-        userUuidList.removeAll(userUuids);
+        userUuidList = removeAll(userUuidList,userUuids);
+
         signInTask.setUserUuids(JSONObject.toJSONString(userUuidList));
-        return updateById(signInTask);
+        List<String> deviceUuids = new ArrayList<>();
+
+        if (StringUtils.hasText(signInTask.getDeviceUuids())){
+            deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids(), String.class);
+        }
+        
+        if (updateById(signInTask)) {
+            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids,ReportEnum.DELETE);
+            return true;
+        }
+        return false;
     }
 
+
+
     @Override
-    public boolean deleteDeviceUser(String uuid, List<String> devices) {
+    public boolean deleteDeviceUser(String uuid, List<String> deviceUuids) {
         SignInTask signInTask = getTaskByUuid(uuid);
-        Assert.notNull(signInTask,EResultCode.NullDataFail.getMessage());
+        Assert.notNull(signInTask, EResultCode.NullDataFail.getMessage());
         String uuidsJson = signInTask.getDeviceUuids();
         List<String> deviceUuidList = JSONObject.parseArray(uuidsJson, String.class);
-        deviceUuidList.removeAll(devices);
+        deviceUuidList = removeAll(deviceUuidList,deviceUuids);
         signInTask.setUserUuids(JSONObject.toJSONString(deviceUuidList));
-        return updateById(signInTask);
+        List<String> userUuids = new ArrayList<>();
+
+        if (StringUtils.hasText(signInTask.getUserUuids())){
+            userUuids = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
+        }
+
+        if (updateById(signInTask)) {
+            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids,ReportEnum.DELETE);
+            return true;
+        }
+        return false;
+    }
+
+    private List<String> removeAll(List<String> deviceUuidList, List<String> deviceUuids) {
+        for (String deviceUuid : deviceUuids) {
+            deviceUuidList.remove(deviceUuid);
+        }
+        return deviceUuidList;
     }
 
     @Override
     public Set<String> getOrganizationNameList() {
         Set<String> result = new HashSet<>();
         List<User> list = userService.list(new LambdaQueryWrapper<User>().orderByDesc(BaseEntity::getCreateTime));
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return result;
         }
         for (User user : list) {
@@ -438,7 +654,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     public Set<String> getAreaAddressNameList() {
         Set<String> result = new HashSet<>();
         List<Device> list = deviceService.list(new LambdaQueryWrapper<Device>().orderByDesc(BaseEntity::getCreateTime));
-        if (CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return result;
         }
         for (Device device : list) {
@@ -447,13 +663,27 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         return result;
     }
 
+    @Override
+    public boolean deleteAllUser(String uuid) {
+        SignInTask task = getTaskByUuid(uuid);
+        task.setUserUuids("[]");
+        return updateById(task);
+    }
+
+    @Override
+    public boolean deleteAllDevice(String uuid) {
+        SignInTask task = getTaskByUuid(uuid);
+        task.setDeviceUuids("[]");
+        return updateById(task);
+    }
+
     private static String getPageSignInMode(SignInTask signInTask) {
         String signInMode = "";
         String taskSignInMode = signInTask.getSignInMode();
         List<Integer> codeList = JSONObject.parseArray(taskSignInMode, Integer.class);
         for (int i = 0; i < codeList.size(); i++) {
             signInMode += SignInModeEnum.getByCode(codeList.get(i)).getDescription();
-            if (i != codeList.size()-1){
+            if (i != codeList.size() - 1) {
                 signInMode += "、";
             }
         }
@@ -462,32 +692,83 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     private static String getPageVoWeek(SignInTask signInTask) {
         String pageVoWeek = "";
-        if (signInTask.getPollingMode().getCode().equals(PollingModeEnum.DAY.getCode())){
+        if (signInTask.getPollingMode().getCode().equals(PollingModeEnum.DAY.getCode())) {
             //单日
             List<LocalDateTime> localDateTimes = JSONObject.parseArray(signInTask.getWeek()).toJavaList(LocalDateTime.class);
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
             for (int i = 0; i < localDateTimes.size(); i++) {
                 pageVoWeek += localDateTimes.get(i).format(dateTimeFormatter);
-                if (i != localDateTimes.size()-1){
+                if (i != localDateTimes.size() - 1) {
                     pageVoWeek += "、 ";
                 }
             }
-        }else {
-            List<String> localDateTimes = JSONObject.parseArray(signInTask.getWeek()).toJavaList(String.class);
-            for (int i = 0; i < localDateTimes.size(); i++) {
-                pageVoWeek += localDateTimes.get(i);
-                if (i != localDateTimes.size()-1){
+        } else {
+            List<Integer> weekCodes = JSONObject.parseArray(signInTask.getWeek()).toJavaList(Integer.class);
+            for (int i = 0; i < weekCodes.size(); i++) {
+                pageVoWeek += WeekEnum.getDescription(weekCodes.get(i));
+                if (i != weekCodes.size() - 1) {
                     pageVoWeek += "、";
                 }
             }
-
-            if (localDateTimes.size()==7){
+            if (weekCodes.size() == 7) {
                 pageVoWeek = WeekEnum.EVERYDAY.getDescription();
             }
         }
         return pageVoWeek;
     }
 
+    @Override
+    public List<TaskUserPageVo> userPage(List<String> userUuids) {
+        Map<String, User> userMap = userService.getByUserUuids(userUuids);
+        ArrayList<TaskUserPageVo> result = Lists.newArrayList();
+        userMap.forEach((uuid, user) -> {
+            TaskUserPageVo vo = new TaskUserPageVo();
+            vo.setUuid(uuid);
+            vo.setName(user.getName());
+            vo.setUserTypes(Arrays.asList(user.getUserType()));
+            result.add(vo);
+        });
+        return result;
+    }
 
+    @Override
+    public List<SignInTask> getTodayTasks(LocalDate date,String deviceUuid) {
+        LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<SignInTask>();
+        qw.le(SignInTask::getTaskStartDate, date)
+                .ge(SignInTask::getTaskEndDate, date)
+                .eq(SignInTask::getIsEnable, true)
+                .like(StringUtils.hasText(deviceUuid),SignInTask::getDeviceUuids,deviceUuid)
+                .orderByAsc(SignInTask::getTaskStartTime)
+                .orderByAsc(SignInBase::getTaskEndTime);
+        return list(qw);
+    }
 
+    @Override
+    public List<SignInTask> getManageTodayTasks(LocalDate date, String operatorUuid) {
+        List<SignInTask> sign = getTodayTasks(date,null);
+        List<SignInTask> signInTasks = sign.stream().filter(signInTask -> {
+            SignInTask task = getTaskByUuid(signInTask.getUuid());
+            MoreConfig moreConfig = JSONObject.parseObject(task.getMoreConfig(), MoreConfig.class);
+            if (moreConfig != null && moreConfig.getManager() != null && moreConfig.getManager().getIsManager()) {
+                if (moreConfig.getManager().getManagerUuids().contains(operatorUuid)) {
+                    return true;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
+        return signInTasks;
+    }
+
+    @Override
+    public List<SignInTask> getUserTodayTasks(LocalDate date, String operatorUuid) {
+        LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<>();
+        qw.le(SignInTask::getTaskStartDate, date)
+                .ge(SignInTask::getTaskEndDate, date)
+                .eq(SignInTask::getIsEnable, true)
+                .like(SignInTask::getUserUuids,operatorUuid)
+                .orderByAsc(SignInTask::getTaskStartTime)
+                .orderByAsc(SignInBase::getTaskEndTime);
+        return list(qw);
+    }
 }
+

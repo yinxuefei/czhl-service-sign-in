@@ -1,6 +1,7 @@
 package com.gdczhl.saas.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -12,7 +13,7 @@ import lombok.Setter;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author hkx
@@ -21,56 +22,31 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName("sign_in_task")
-public class SignInTask extends BaseEntity {
+public class SignInTask extends SignInBase {
 
-    /**
-     * 签到任务名称
-     */
+    //签到任务名称
     private String name;
 
-    /**
-     * 所有待签到人员
-     */
+    //所有待签到人员
     private String userUuids;
 
-    /**
-     * 循环模式
-     */
+    //循环模式
     private PollingModeEnum pollingMode;
 
-    /**
-     * 打卡模式
-     */
+    //打卡模式
     private String signInMode;
 
-    /**
-     * 签到日
-     */
+    //签到日
     private String week;
 
-    /**
-     * 签到任务开始时间
-     */
-    private LocalTime taskStartTime;
-
-    /**
-     * 签到任务结束时间
-     */
-    private LocalTime taskEndTime;
-
-    /**
-     * 签到时间段名称
-     */
-    private String taskName;
 
     /**
      * 有效开始日期
      */
     private LocalDate taskStartDate;
 
-    /**
-     * 有效结束日期
-     */
+    //有效结束日期
+
     private LocalDate taskEndDate;
 
     //签到推送
@@ -88,7 +64,12 @@ public class SignInTask extends BaseEntity {
     //终端sn
     private String deviceSns;
 
+    //开启
+    private Boolean isEnable;
+
     //更多设置
     private String moreConfig;
 
+    //机构uuid
+    private String institutionUuid;
 }

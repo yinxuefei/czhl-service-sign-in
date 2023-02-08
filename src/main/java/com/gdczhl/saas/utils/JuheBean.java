@@ -13,7 +13,7 @@ public class JuheBean {
 
 
     @Data
-    public class JuheDay{
+    public class JuheDay {
 
         //日期
         private String date;

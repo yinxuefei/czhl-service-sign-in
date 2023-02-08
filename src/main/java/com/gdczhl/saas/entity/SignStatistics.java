@@ -1,57 +1,67 @@
 package com.gdczhl.saas.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.util.Date;
 
-import lombok.Data;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author hkx
- * @since 2023-01-05
+ * @since 2023-01-14
  */
-@Data
+@Getter
+@Setter
 @TableName("sign_statistics")
-public class SignStatistics extends BaseEntity {
+public class SignStatistics extends SignInBase {
 
     /**
-     * 任务开始时间
+     * 任务uuid
      */
-    private Date taskStartTime;
+    private String taskUuid;
 
     /**
-     * 任务开始时间
+     * 应签用户
      */
-    private Date taskEndTime;
+    private String allUser;
 
     /**
-     * 签到时段名称
+     * 已签用户
      */
-    private String taskName;
+    private String alreadyUser;
 
     /**
-     * 应签到人数
+     * 补签用户
      */
-    private Integer allSign;
+    private String reUser;
 
     /**
-     * 已签到人数
+     * 未签用户
      */
-    private Integer signed;
+    private String notUser;
 
     /**
-     * 补签人数
+     * 请假用户
      */
-    private Integer reSign;
+    private String askLeaveUser;
 
-    /**
-     * 未签人数
-     */
-    private String notSign;
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate createDate;
 
+    //开启
+    private Boolean isEnable;
+
+    //机构
+    private String institutionUuid;
 
 }

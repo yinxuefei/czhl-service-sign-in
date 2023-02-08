@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "czhl-service-iot",url = "http://192.168.10.251:18080",path = "/iot/feign")
+@FeignClient(name = "czhl-service-iot", path = "/iot/feign")
 public interface IotRemoteService {
 
     /**

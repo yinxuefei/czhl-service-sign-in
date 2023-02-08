@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new HeaderInterceptor())
                 .addPathPatterns("/**")
                 //swagger
-                .excludePathPatterns("/favicon.ico", "/doc.html", "/webjars/**", "/swagger-resources","/v2/api-docs")
-                .excludePathPatterns("/feign/**");
+                .excludePathPatterns("/favicon.ico", "/doc.html", "/webjars/**", "/swagger-resources", "/v2/api-docs")
+                .excludePathPatterns("/feign/**","/third/**");
     }
 }

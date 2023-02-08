@@ -1,6 +1,7 @@
 package com.gdczhl.saas.config;
 
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +57,5 @@ public class XxlJobConfig {
 
         return xxlJobSpringExecutor;
     }
-
 
 }

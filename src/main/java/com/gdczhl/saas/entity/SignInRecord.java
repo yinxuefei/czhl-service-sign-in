@@ -1,6 +1,8 @@
 package com.gdczhl.saas.entity;
 
+import cn.hutool.crypto.asymmetric.Sign;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.io.Serializable;
 import java.time.LocalTime;
 import java.util.Date;
@@ -11,7 +13,7 @@ import lombok.Setter;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author hkx
@@ -20,7 +22,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName("sign_in_record")
-public class SignInRecord extends BaseEntity{
+public class SignInRecord extends SignInBase {
 
     /**
      * 任务uuid
@@ -32,10 +34,7 @@ public class SignInRecord extends BaseEntity{
      */
     private String userUuid;
 
-    /**
-     * 签到时段名称
-     */
-    private String taskName;
+    private String deviceUuid;
 
     /**
      * 签到地点
@@ -60,7 +59,7 @@ public class SignInRecord extends BaseEntity{
     /**
      * 签到设备sn
      */
-    private String signDeviceSn;
+    private String numberSn;
 
     /**
      * 体感温度
@@ -68,4 +67,16 @@ public class SignInRecord extends BaseEntity{
     private Float bodyTemperature;
 
     private String username;
+
+    /**
+     * 设备地区
+     */
+    private String areaUuid;
+
+    private String signStatisticsUuid;
+
+    private String institutionUuid;
+
+    private Boolean isEnable;
+
 }

@@ -8,6 +8,8 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+
 @Configuration
 @MapperScan("com.baomidou.cloud.service.*.mapper*")
 public class MybatisPlusConfig {
@@ -20,6 +22,10 @@ public class MybatisPlusConfig {
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         //乐观锁插件
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+
+//        PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor();
+//        paginationInnerInterceptor.setOverflow(true);
+//        interceptor.setInterceptors(Arrays.asList(paginationInnerInterceptor));
         return interceptor;
     }
 
