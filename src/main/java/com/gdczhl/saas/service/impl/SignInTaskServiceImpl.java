@@ -593,20 +593,19 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     @Override
     public boolean deleteTaskUser(String uuid, List<String> userUuids) {
-
+        //获取人员
         SignInTask signInTask = getTaskByUuid(uuid);
         Assert.notNull(signInTask, EResultCode.NullDataFail.getMessage());
         String uuidsJson = signInTask.getUserUuids();
         List<String> userUuidList = JSONObject.parseArray(uuidsJson, String.class);
         userUuidList = removeAll(userUuidList,userUuids);
-
+        //保存
         signInTask.setUserUuids(JSONObject.toJSONString(userUuidList));
         List<String> deviceUuids = new ArrayList<>();
-
         if (StringUtils.hasText(signInTask.getDeviceUuids())){
             deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids(), String.class);
         }
-        
+
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(userUuids, signInTask, deviceUuids,ReportEnum.DELETE);
             return true;
@@ -623,7 +622,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         String uuidsJson = signInTask.getDeviceUuids();
         List<String> deviceUuidList = JSONObject.parseArray(uuidsJson, String.class);
         deviceUuidList = removeAll(deviceUuidList,deviceUuids);
-        signInTask.setUserUuids(JSONObject.toJSONString(deviceUuidList));
+        signInTask.setDeviceUuids(JSONObject.toJSONString(deviceUuidList));
         List<String> userUuids = new ArrayList<>();
 
         if (StringUtils.hasText(signInTask.getUserUuids())){
