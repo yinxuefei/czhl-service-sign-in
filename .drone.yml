@@ -1,0 +1,93 @@
+kind: pipeline
+type: docker
+name: czhl-service-wechat
+
+trigger:
+  branch:
+    - master
+
+# drone构建步骤
+steps:
+  # 1.maven打包
+  - name: maven compile
+    pull: if-not-exists
+    image: maven:ibmjava-alpine
+    volumes:
+      # maven构建缓存
+      - name: m2-cache
+        path: /root/.m2
+    commands:
+      # 开始打包maven工程
+      - mvn clean package -Dmaven.test.skip=true
+      # 构建版本号，读取pom.xml上的项目版本号
+      - cat target/maven-archiver/pom.properties|grep version|awk -F 'version=' '{print $2}' |awk '{print $0 ",latest"}' > .tags
+      - cat .tags
+
+  # 2.打包镜像并推送到私有仓库
+  - name: docker push
+    pull: if-not-exists
+    image: plugins/docker
+    volumes: # 将容器内目录挂载到宿主机，仓库需要开启Trusted设置
+      - name: docker
+        path: /var/run/docker.sock # 挂载宿主机的docker
+    settings:
+      mirror: https://ustc-edu-cn.mirror.aliyuncs.com/
+      insecure: true
+      username:
+        from_secret: harbor_username
+      password:
+        from_secret: harbor_password
+      registry:
+        from_secret: harbor_registry
+      repo:
+        from_secret: repo
+
+  # 3.发布镜像
+  - name: ssh commands
+    pull: if-not-exists
+    image: appleboy/drone-ssh
+    environment:
+      IMAGE:
+        from_secret: repo
+    settings:
+      script_stop: true
+      host:
+        from_secret: ssh_host
+      port:
+        from_secret: ssh_port
+      username:
+        from_secret: ssh_username
+      password:
+        from_secret: ssh_password
+      envs:
+        - IMAGE
+        - DRONE_REPO_NAME
+      script:
+        - echo =======更新、创建服务=======
+        - docker service update $DRONE_REPO_NAME --with-registry-auth --image $IMAGE || docker service create --with-registry-auth --env-file /root/nacos.env --network=czhl_services_net --name $DRONE_REPO_NAME $IMAGE
+
+  # 4.钉钉通知
+  - name: dingtalk notification
+    pull: if-not-exists
+    image: lddsb/drone-dingtalk-message
+    settings:
+      token:
+        from_secret: dingtalk_token
+      secret:
+        from_secret: dingtalk_secret
+      type: markdown
+      message_color: true
+      message_pic: true
+      sha_link: true
+    when:
+      status: [ failure, success ]
+
+# 挂载的主机卷，可以映射到docker容器中
+volumes:
+  # maven构建缓存
+  - name: m2-cache
+    host:
+      path: /var/cache/drone/m2
+  - name: docker
+    host:
+      path: /var/run/docker.sock
