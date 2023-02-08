@@ -117,7 +117,7 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
             return UserStatisticsCountBo.builder().signed(0).notSign(0).reSign(0).allSign(0).countSign(0).build();
         }
         UserStatisticsCountBo result = new UserStatisticsCountBo();
-        Integer allSign = 0;
+        Integer allSign = 0;//应签
         Integer resign = 0;
         Integer notSign = 0;
         Integer signed = 0;

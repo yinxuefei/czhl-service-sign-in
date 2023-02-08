@@ -36,8 +36,7 @@ public class ThirdTaskController {
     @GetMapping("todayTasks")
     @ApiOperation("当天任务计划发布")
     public ResponseVo<List<ReportTaskVo>> todayTasks(@ApiParam("日期") @RequestParam @DateTimeFormat(pattern = "yyyy-MM" +
-            "-dd") LocalDate date,
-                                                     @ApiParam("设备uuid") String deviceUuid ) {
+            "-dd") LocalDate date, @ApiParam("设备uuid") String deviceUuid ) {
         List<SignInTask> signInTasks = thirdTaskService.todayTasks(date,deviceUuid);
 
         List<ReportTaskVo> list = signInTasks.stream().map(signInTask -> {

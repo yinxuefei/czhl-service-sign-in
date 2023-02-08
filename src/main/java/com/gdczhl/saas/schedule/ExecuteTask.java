@@ -26,7 +26,7 @@ public class ExecuteTask {
         LocalDate localDate = LocalDate.now();
         List<SignInTask> signInTasks = thirdTaskService.todayTasks(localDate, null);
         for (SignInTask signInTask : signInTasks) {
-            if (signInTask.getTaskStartTime().isAfter(LocalTime.now())){
+            if (signInTask.getTaskStartTime().isAfter(LocalTime.now())&&signInTask.getTaskStartTime().isBefore(LocalTime.now())){
             thirdTaskService.getSignStatisticsUUid(signInTask,localDate);
             }
         }
