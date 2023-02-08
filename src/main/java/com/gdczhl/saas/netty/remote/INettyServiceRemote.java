@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Set;
 
-@FeignClient(name = "netty-cmd", url = "http://192.168.20.251:9877")
+@FeignClient(name = "netty-cmd")
+//, url = "http://192.168.20.251:9877"
 public interface INettyServiceRemote {
 
     /**

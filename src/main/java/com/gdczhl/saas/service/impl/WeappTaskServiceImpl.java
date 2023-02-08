@@ -66,7 +66,10 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
         for (SignInTask task : todayTasks) {
             DayTaskVo dayTaskVo = CzBeanUtils.copyProperties(task, DayTaskVo::new);
             dayTaskVo.setUuid(task.getUuid());
-            List<String> users = getUsersByJson(task.getUserUuids(), String.class);
+            List<String> users = new ArrayList<>();
+            if (StringUtils.hasText(task.getUserUuids())){
+                users = getUsersByJson(task.getUserUuids(),String.class);
+            }
             dayTaskVo.setAllSignInCount(users.size());
             SignStatistics statistics = signStatisticsService.getStatisticsByTaskUuid(task.getUuid(), date);
             if (statistics == null || StringUtils.isEmpty(statistics.getReUser())) {
