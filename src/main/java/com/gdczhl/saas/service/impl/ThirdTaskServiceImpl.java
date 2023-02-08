@@ -198,7 +198,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         return signInRecordService.getByUuid(recordUuid);
     }
 
-    private String getSignStatisticsUUid(SignInTask signInTask, LocalDate now) {
+    public String getSignStatisticsUUid(SignInTask signInTask, LocalDate now) {
         //key taskUuid  value StatisticsUuid
         String key = RedisConstant.STATISTICS_UUID_KEY + signInTask.getUuid();
         String statisticsUuid = stringRedisTemplate.opsForValue().get(key);

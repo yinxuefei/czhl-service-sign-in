@@ -12,7 +12,7 @@ import java.util.List;
 
 @Data
 @ApiModel("当日单个任务")
-public class DayTaskVo extends SignInBase {
+public class DayTaskVo extends SignInVoBase {
 
     @ApiModelProperty("任务uuid")
     private String uuid;

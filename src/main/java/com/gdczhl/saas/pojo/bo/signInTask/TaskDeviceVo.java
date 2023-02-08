@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class TaskDeviceVo {
 
-    @ApiModelProperty("用户uuid数组")
+    @ApiModelProperty("设备uuid数组")
     List<String> deviceUuids;
 
     @ApiModelProperty("任务uuid")

@@ -73,23 +73,34 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
                 users = getUsersByJson(task.getUserUuids(), String.class);
             }
             dayTaskVo.setAllSignInCount(users.size());
+
             SignStatistics statistics = signStatisticsService.getStatisticsByTaskUuid(task.getUuid(), date);
-            if (statistics == null || StringUtils.isEmpty(statistics.getReUser())) {
+            if (statistics == null) {
+                // 任务未开始
+                dayTaskVo.setSignInCount(0);
+                dayTaskVo.setNotSignInCount(users.size());
+                result.add(dayTaskVo);
+                continue;
+            }
+
+            if (StringUtils.isEmpty(statistics.getAlreadyUser())) {
+                // 任务进行中
                 String key = RedisConstant.USER_UUID_KEY + task.getUuid();
                 Set<String> userUuids = stringRedisTemplate.opsForSet().members(key);
                 if (CollectionUtils.isEmpty(userUuids)) {
-                    // 任务未开始
+                    //已签为0
                     dayTaskVo.setSignInCount(0);
                     dayTaskVo.setNotSignInCount(users.size());
                     result.add(dayTaskVo);
                     continue;
+                } else {
+                    dayTaskVo.setSignInCount(userUuids.size());
+                    dayTaskVo.setNotSignInCount(users.size() - userUuids.size());
+                    result.add(dayTaskVo);
+                    continue;
                 }
-                // 任务进行中
-                dayTaskVo.setSignInCount(getSignInCount(statistics.getUuid(), SignStatusEnum.SINGED));
-                dayTaskVo.setNotSignInCount(getSignInCount(statistics.getUuid(), SignStatusEnum.NOT_SING));
-                result.add(dayTaskVo);
-                continue;
             }
+            //任务已结束
             dayTaskVo.setSignInCount(getUsersByJson(statistics.getAlreadyUser(), String.class).size());
             dayTaskVo.setNotSignInCount(getUsersByJson(statistics.getNotUser(), String.class).size());
             result.add(dayTaskVo);
@@ -150,7 +161,7 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
             }
         }
         return null;
-}
+    }
 
 
     @Override

@@ -50,7 +50,7 @@ public class TaskController {
 
 
     @GetMapping("daySignTask")
-    @ApiOperation("当天内任务")
+    @ApiOperation("当前用户为负责人可查看的任务")
     public ResponseVo<List<DayTaskVo>> daySignTask(@ApiParam("日期 yyyy-MM-dd") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         String operatorUuid = ContextCache.getOperatorUuid();
         List<DayTaskVo> dayTaskVos = weappTaskService.daySignTask(date,operatorUuid);

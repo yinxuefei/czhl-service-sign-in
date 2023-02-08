@@ -23,4 +23,6 @@ public interface IThirdTaskService {
     void deviceSignIn(DeviceSignVo deviceSignVo);
 
     SignInInfoVo signInInfo(String uuid, LocalDateTime time,String deviceUuid );
+
+    public String getSignStatisticsUUid(SignInTask signInTask, LocalDate now);
 }

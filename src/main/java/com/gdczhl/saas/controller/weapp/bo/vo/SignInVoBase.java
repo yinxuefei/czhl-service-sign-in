@@ -1,5 +1,6 @@
-package com.gdczhl.saas.entity;
+package com.gdczhl.saas.controller.weapp.bo.vo;
 
+import com.gdczhl.saas.entity.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SignInBase extends BaseEntity {
+public class SignInVoBase  {
 
     //签到任务开始时间
     @ApiModelProperty("签到任务开始时间")
