@@ -165,10 +165,10 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                         //包含日期 保留
                         if (collect.contains(date)) {
                             return true;
-                        } else {
-                            return false;
                         }
-                    } else {
+                        return false;
+                        }
+                     else {
                         List<Integer> list = JSONObject.parseArray(signInTask.getWeek(), Integer.class);
                         List<LocalDate> periodDate = TimeUtil.getPeriodDate(signInTask.getTaskStartDate(), signInTask.getTaskEndDate());
 

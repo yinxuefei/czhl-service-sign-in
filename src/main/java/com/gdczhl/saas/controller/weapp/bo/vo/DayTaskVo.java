@@ -26,4 +26,8 @@ public class DayTaskVo extends SignInBase {
     @ApiModelProperty("未签人次")
     private Integer NotSignInCount;
 
+    @ApiModelProperty("0,无异常,1,有异常,2,无任务")
+    private Integer isSignIn;
+
+
 }

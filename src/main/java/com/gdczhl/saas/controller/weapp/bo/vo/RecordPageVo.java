@@ -30,4 +30,7 @@ public class RecordPageVo {
     @ApiModelProperty("签到照片url")
     private String picture;
 
+    @ApiModelProperty("用户uuid")
+    private String userUuid;
+
 }

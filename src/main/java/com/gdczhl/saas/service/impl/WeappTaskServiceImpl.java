@@ -78,7 +78,7 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
                 if (CollectionUtils.isEmpty(userUuids)) {
                     // 任务未开始
                     dayTaskVo.setSignInCount(0);
-                    dayTaskVo.setNotSignInCount(users.size()-0);
+                    dayTaskVo.setNotSignInCount(users.size());
                     result.add(dayTaskVo);
                     continue;
                 }
@@ -172,6 +172,7 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
             } else {
                 recordPageVo.setTemperatureStatus(BodyStatusEnum.NULL.getCode());
             }
+            recordPageVo.setUserUuid(record.getUserUuid());
             recordPageVo.setPicture(record.getSignImageUrl());
             recordPageVo.setSignStatus(record.getStatus().getCode());
             recordPageVo.setSignTime(record.getCreateTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm" +
