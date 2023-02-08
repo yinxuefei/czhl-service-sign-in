@@ -10,8 +10,8 @@ import lombok.Getter;
 @ApiModel("任务状态")
 public enum ReportEnum {
 
-    ADD(0, "删除人脸"),
-    DELETE(1, "添加人脸");
+    DELETE(0, "删除人脸"),
+    ADD(1, "添加人脸");
 
     @EnumValue
     private final Integer code;

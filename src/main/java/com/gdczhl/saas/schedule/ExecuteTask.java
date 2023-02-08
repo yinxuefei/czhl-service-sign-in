@@ -16,20 +16,7 @@ import java.util.List;
 @Slf4j
 public class ExecuteTask {
 
-    @Autowired
-    private IThirdTaskService thirdTaskService;
 
-    @Scheduled(cron = "0/59 * * * * ? ")
-    public void main() {
-        //获取所有启用,并合法的项目(未设置用户,未设置设备)
-        //模拟小程序端获取数据
-        LocalDate localDate = LocalDate.now();
-        List<SignInTask> signInTasks = thirdTaskService.todayTasks(localDate, null);
-        for (SignInTask signInTask : signInTasks) {
-            if (signInTask.getTaskStartTime().isAfter(LocalTime.now())&&signInTask.getTaskStartTime().isBefore(LocalTime.now())){
-            thirdTaskService.getSignStatisticsUUid(signInTask,localDate);
-            }
-        }
 
-    }
+
 }

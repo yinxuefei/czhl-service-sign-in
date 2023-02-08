@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -45,11 +46,12 @@ public class xxlJobTask {
     @Autowired
     private IThirdTaskService thirdTaskService;
 
+
     @Autowired
     private IUserService userService;
 
     @XxlJob("statisticsTask")
-    public void createStatisticsTask() {
+    public void statisticsTask() {
         List<SignInTask> signInTasks = thirdTaskService.todayTasks(LocalDate.now(), null);
         //时间过期 前一分钟统计
         for (SignInTask signInTask : signInTasks) {
@@ -78,5 +80,19 @@ public class xxlJobTask {
                 signStatisticsService.updateByUuid(statistics);
             }
         }
+    }
+
+    @XxlJob("createTask")
+    public void createTask() {
+        //获取所有启用,并合法的项目(未设置用户,未设置设备)
+        //模拟小程序端获取数据
+        LocalDate localDate = LocalDate.now();
+        List<SignInTask> signInTasks = thirdTaskService.todayTasks(localDate, null);
+        for (SignInTask signInTask : signInTasks) {
+            if (signInTask.getTaskStartTime().isAfter(LocalTime.now())&&signInTask.getTaskStartTime().isBefore(LocalTime.now())){
+                thirdTaskService.getSignStatisticsUUid(signInTask,localDate);
+            }
+        }
+
     }
 }
