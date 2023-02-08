@@ -44,7 +44,7 @@ public class SignTasks {
      * @return
      */
     public static <T> T checkHttpResponse(ResponseVo<T> responseVo) {
-        if (responseVo.getCode() == EResultCode.SUCCESS.getCode() && Objects.nonNull(responseVo.getData())) {
+        if (responseVo.getCode() == EResultCode.SUCCESS.getCode()) {
             return responseVo.getData();
         }
         throw new RuntimeException("连接超时");

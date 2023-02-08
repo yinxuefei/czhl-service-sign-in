@@ -6,9 +6,9 @@ MAINTAINER hkx
 ADD target/*.jar app.jar
 # 镜像启动成为容器后，对外暴露的端口
 EXPOSE 8080
-EXPOSE 15005
+EXPOSE 15056
 # Image创建容器时的初始化内存，最大内存，及启动时使用的profile. -c为清除以前启动的数据
-ENTRYPOINT ["java","-Xnoagent","-Djava.compiler=NONE","-Xdebug","-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=15005","-Xms256m","-Xmx256m","-jar","/app.jar","-c"]
+ENTRYPOINT ["java","-Xnoagent","-Djava.compiler=NONE","-Xdebug","-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=15056","-Xms256m","-Xmx256m","-jar","/app.jar","-c"]
 #设置时区
 RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && echo 'Asia/Shanghai' >/etc/timezone \
