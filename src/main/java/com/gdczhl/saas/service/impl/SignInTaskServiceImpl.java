@@ -725,7 +725,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             TaskUserPageVo vo = new TaskUserPageVo();
             vo.setUuid(uuid);
             vo.setName(user.getName());
-            vo.setUserTypes(Arrays.asList(user.getUserType()));
+            vo.setUserTypes(UserType.parseTypes(user.getUserType()));
             result.add(vo);
         });
         return result;

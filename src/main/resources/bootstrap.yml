@@ -17,45 +17,37 @@ spring:
         enabled: true
         file-extension: yaml
         context-path: /nacos
-        #公共配置
         shared-configs[0]:
-          data-id: common-global.yaml
-          group: COMMON_GROUP
-          refresh: false
-        #redis公共配置
-        shared-configs[1]:
           data-id: common-redis.yaml
           group: COMMON_GROUP
-          refresh: false
-        #xxl-job公共配置
-        shared-configs[2]:
-          data-id: common-xxl-job-admin.yaml
-          group: COMMON_GROUP
-          refresh: false
+          refresh: true
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/info?useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+#  profiles:
+#    active: dev
+
 
 logging:
-  # 日志
+  #  config: classpath:logback-spring.xml
   file:
+    # 日志
     name: ./log/${spring.application.name}.log
-  #修改nacos日志打印级别
   level:
+    root: info
+    #修改nacos日志打印级别
     com.alibaba.nacos.client.config.impl: WARN
-    com.alibaba.nacos.client.naming: WARN
 
-#swagger显示pom版本号
-swagger:
-  application:
-    version: @project.version@
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: ALWAYS
-
+rocketmq:
+  name-server: 192.168.20.251:19876
+  producer:
+    group: simple-producer-group
+#  consumer:
+#    group: simple-consumer-group
 
 
 
