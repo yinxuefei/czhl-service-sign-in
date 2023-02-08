@@ -321,6 +321,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             for (DeviceInfoVo deviceInfoVo : deviceInfoVoList) {
                 Device device = new Device();
                 BeanUtils.copyProperties(deviceInfoVo, device);
+                log.info("{}设备的地区uuid:{}",deviceInfoVo.getName(),device.getAreaUuid());
                 ResponseVo<AreaBriefInfoVo> remoteServiceInfoByUuid = areaRemoteService.findInfoByUuid(device.getAreaUuid());
                 AreaBriefInfoVo flagSaveListBo = SignTasks.checkHttpResponse(remoteServiceInfoByUuid);
                 device.setAreaCode(flagSaveListBo.getAreaCode());
