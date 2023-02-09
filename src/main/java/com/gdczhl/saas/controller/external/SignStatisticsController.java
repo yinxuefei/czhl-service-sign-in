@@ -3,6 +3,7 @@ package com.gdczhl.saas.controller.external;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gdczhl.saas.entity.SignInTask;
+import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.pojo.bo.signInStatistics.SignStatisticsPageBo;
 import com.gdczhl.saas.pojo.bo.signInStatistics.UserStatisticsCountBo;
 import com.gdczhl.saas.pojo.vo.signInStatistics.SignStatisticsPageVo;
@@ -124,13 +125,15 @@ public class SignStatisticsController {
             BeanUtils.copyProperties(signInRecordList, result);
             return ResponseVo.success(result);
         }
-
         List<UserSignStatisticsVo> recordVos = records.stream().map(signInRecord -> {
             UserSignStatisticsVo vo = new UserSignStatisticsVo();
             BeanUtils.copyProperties(signInRecord, vo);
             vo.setCreateDate(signInRecord.getCreateTime().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy.MM" +
                     ".dd")));
             vo.setCreateTime(signInRecord.getCreateTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+            if (signInRecord.getStatus().equals(SignStatusEnum.NOT_SING)){
+                vo.setCreateTime("");
+            }
             vo.setStatus(signInRecord.getStatus().getCode());
             return vo;
         }).collect(Collectors.toList());
