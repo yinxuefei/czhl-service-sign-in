@@ -38,7 +38,7 @@ public class SignStatisticsPageVo {
     private String name;
 
     @ApiModelProperty("时段名称")
-    private String taskName;
+    private String periodName;
 
     @ApiModelProperty("应签到人数")
     private Integer allSign;

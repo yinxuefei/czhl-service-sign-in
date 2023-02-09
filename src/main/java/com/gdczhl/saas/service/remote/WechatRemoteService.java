@@ -21,13 +21,13 @@ public interface WechatRemoteService {
     ResponseVo<OfficialAccountVo> get(@RequestParam("institutionUuid") String institutionUuid);
 
 
-    /**
-     * 添加公众号模板类型
-     * @param officialAccountSaveVo
-     * @return
-     */
-    @PostMapping("templateMessage/addTemplate")
-    ResponseVo addTemplate(@RequestBody OfficialAccountSaveVo officialAccountSaveVo);
+//    /**
+//     * 添加公众号模板类型
+//     * @param officialAccountSaveVo
+//     * @return
+//     */
+//    @PostMapping("templateMessage/addTemplate")
+//    ResponseVo addTemplate(@RequestBody OfficialAccountSaveVo officialAccountSaveVo);
 
 
     /**

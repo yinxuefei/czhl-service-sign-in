@@ -28,7 +28,7 @@ public class SignInTaskPageVo {
     private String weekDays;
 
     @ApiModelProperty("签到时段")
-    private String timePeriod;
+    private String periodName;
 
     @ApiModelProperty("有效周期")
     private String datePeriod;

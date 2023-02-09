@@ -84,7 +84,7 @@ public class SignStatisticsController {
             String uuid = bo.getTaskUuid();
             SignInTask signInTask = signInTaskService.getTaskByUuid(uuid);
             vo.setName(signInTask.getName());
-            vo.setTaskName(SignTasks.getTaskNameResult(signInTask));
+            vo.setPeriodName(SignTasks.getTaskNameResult(signInTask));
             return vo;
         }).collect(Collectors.toList());
 
@@ -131,9 +131,10 @@ public class SignStatisticsController {
             vo.setCreateDate(signInRecord.getCreateTime().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy.MM" +
                     ".dd")));
             vo.setCreateTime(signInRecord.getCreateTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-            vo.setStatus(signInRecord.getStatus().getDescription());
+            vo.setStatus(signInRecord.getStatus().getCode());
             return vo;
         }).collect(Collectors.toList());
+        BeanUtils.copyProperties(signInRecordList,result);
         result.setRecords(recordVos);
         return ResponseVo.success(result);
     }

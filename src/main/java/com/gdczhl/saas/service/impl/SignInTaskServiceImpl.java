@@ -459,7 +459,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             signInTaskPageVo.setPollingMode(signInTask.getPollingMode().getCode());
             String pageVoWeek = getPageVoWeek(signInTask);
             signInTaskPageVo.setWeekDays(pageVoWeek);
-            signInTaskPageVo.setTimePeriod(SignTasks.getPeriodNameResult(signInTask));
+            signInTaskPageVo.setPeriodName(SignTasks.getPeriodNameResult(signInTask));
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
             signInTaskPageVo.setDatePeriod(!signInTask.getTaskStartDate().equals(signInTask.getTaskEndDate()) ?
                     signInTask.getTaskStartDate().format(dateTimeFormatter) + "-" + signInTask.getTaskEndDate().format(dateTimeFormatter) :

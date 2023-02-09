@@ -22,7 +22,7 @@ public class SignInRecordPageVo {
     private String username;
 
     @ApiModelProperty("签到时段")
-    private String timePeriod;
+    private String periodName;
 
     @ApiModelProperty("签到时间")
     private String createTime;

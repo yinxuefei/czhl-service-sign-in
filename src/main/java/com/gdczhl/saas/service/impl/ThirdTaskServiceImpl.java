@@ -210,12 +210,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     }
 
     private void sendWechat(User user, Device device, OfficialAccountVo officialAccountVo) {
-        OfficialAccountSaveVo saveVo = new OfficialAccountSaveVo();
-        saveVo.setOfficialAccountUuid(officialAccountVo.getUuid());
-        saveVo.setTemplateId(templateId);
-        saveVo.setTemplateType(templateType);
-        //保存
-        wechatRemoteService.addTemplate(saveVo);
+
         OfficialAccountSendVo sendVo = new OfficialAccountSendVo();
         sendVo.setOfficialAccountUuid(officialAccountVo.getUuid());
         sendVo.setTemplateType(templateType);

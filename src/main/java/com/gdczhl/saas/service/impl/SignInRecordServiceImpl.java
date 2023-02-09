@@ -86,7 +86,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
             signInRecordPageVo.setCreateDate(signInRecord.getCreateTime().toLocalDate().format(dateFormatter));
             signInRecordPageVo.setCreateTime(signInRecord.getCreateTime().toLocalTime().format(timeFormatter));
             SignInTask task = signInTaskService.getTaskByUuid(signInRecord.getSignTaskUuid());
-            signInRecordPageVo.setTimePeriod(SignTasks.getTaskNameResult(task));
+            signInRecordPageVo.setPeriodName(SignTasks.getTaskNameResult(task));
 
             Float bodyTemperature = signInRecord.getBodyTemperature();
             if (null == bodyTemperature || bodyTemperature < 0.0) {
@@ -99,6 +99,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
             arrayList.add(signInRecordPageVo);
         }
 
+        BeanUtils.copyProperties(signInRecordPage,result);
         result.setRecords(arrayList);
 
         return result;

@@ -22,7 +22,7 @@ public class UserSignStatisticsVo {
     private String username;
 
     @ApiModelProperty("状态")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty("签到时间")
     private String createTime;
