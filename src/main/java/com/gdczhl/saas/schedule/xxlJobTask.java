@@ -65,13 +65,13 @@ public class xxlJobTask {
             }
 
             //结束任务在之前一分钟,统计
-            if (signInTask.getTaskEndTime().plusMinutes(1).isAfter(LocalTime.now())){
+            if (signInTask.getTaskEndTime().plusMinutes(1).isBefore(LocalTime.now())){
                 String statisticsKey = RedisConstant.STATISTICS_UUID_KEY+signInTask.getUuid();
                 String statisticsJson = stringRedisTemplate.opsForValue().get(statisticsKey);
                 if (statisticsJson==null){
                     //漏创建的
                     createTask(signInTask);
-                    return;
+                    continue;
                 }
                 String[] split = statisticsJson.split("&&");
                 String statisticsUuid = split[0];
@@ -81,7 +81,7 @@ public class xxlJobTask {
                 //统计打卡信息
                 if (split[1].equals("1")){
                     //已统计
-                    return;
+                    continue;
                 }
                 List<SignInRecord> signInRecordList = signInRecordService.getListByStatisticsUuid(statisticsUuid);
                 HashSet<String> alreadyUser = new HashSet<>();
