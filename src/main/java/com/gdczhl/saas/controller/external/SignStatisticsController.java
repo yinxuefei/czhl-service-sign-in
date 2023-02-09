@@ -98,8 +98,8 @@ public class SignStatisticsController {
     @ApiOperation("签到总数统计")
     public ResponseVo<UserStatisticsCountVo> getUserCountStatistics(@ApiParam("开始日期") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                     @ApiParam("结束日期") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-                                                                    @ApiParam("任务uuid") String uuid) {
-        UserStatisticsCountBo bo = signStatisticsService.getUserCountStatistics(startDate, endDate, uuid);
+                                                                    @ApiParam("任务uuid") String taskUuid) {
+        UserStatisticsCountBo bo = signStatisticsService.getUserCountStatistics(startDate, endDate, taskUuid);
         UserStatisticsCountVo result = CzBeanUtils.copyProperties(bo, UserStatisticsCountVo::new);
         return ResponseVo.success(result);
     }

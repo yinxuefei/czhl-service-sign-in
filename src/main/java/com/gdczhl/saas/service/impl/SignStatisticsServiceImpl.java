@@ -66,7 +66,7 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
         LambdaQueryWrapper<SignStatistics> qw = new LambdaQueryWrapper<>();
         buildQueryWrapper(startDate, endDate, uuid, qw);
         //分页
-        page(page, qw);
+        Page<SignStatistics> page1 = page(page, qw);
 
         List<SignStatisticsPageBo> records = page.getRecords().stream().map(signStatistics -> {
             SignStatisticsPageBo signStatisticsPageBo = new SignStatisticsPageBo();
@@ -85,7 +85,7 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
 
     private void buildQueryWrapper(LocalDate startDate, LocalDate endDate, String uuid,
                                    LambdaQueryWrapper<SignStatistics> qw) {
-        //按日
+
         if (startDate != null && endDate != null) {
             qw.between(SignStatistics::getCreateDate, startDate,
                     endDate);
@@ -95,8 +95,10 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
             qw.eq(SignStatistics::getTaskUuid, uuid);
         }
 
+
         qw.eq(SignStatistics::getIsEnable, true)
-          .eq(SignStatistics::getInstitutionUuid,ContextCache.getInstitutionUuid());
+          .eq(SignStatistics::getInstitutionUuid,
+                  ContextCache.getInstitutionUuid());
     }
 
     @Override

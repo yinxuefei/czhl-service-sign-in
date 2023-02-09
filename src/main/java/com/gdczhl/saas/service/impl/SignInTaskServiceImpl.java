@@ -434,7 +434,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         TimePeriod timePeriod = CzBeanUtils.copyProperties(signInTask, TimePeriod::new);
         BeanUtils.copyProperties(signInTask, result);
         result.setPollingMode(signInTask.getPollingMode().getCode());
-        result.setSignInMode(JSONObject.parseArray(signInTask.getSignInMode(), Integer.class));
+        result.setSignInModes(JSONObject.parseArray(signInTask.getSignInMode(), Integer.class));
         result.setMoreConfig(moreConfig);
         result.setDatePeriod(datePeriod);
         result.setTimePeriod(timePeriod);
