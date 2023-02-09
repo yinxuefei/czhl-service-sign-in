@@ -105,7 +105,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         signInTask.setMoreConfig(JSONObject.toJSONString(moreConfig));
         signInTask.setPollingMode(PollingModeEnum.getByCode(saveBo.getPollingMode()));
         signInTask.setSignInMode(JSONObject.toJSONString(saveBo.getSignInMode()));
-
+        signInTask.setStatus(saveBo.getTaskStartDate().isAfter(LocalDate.now()) && saveBo.getTaskEndDate().isBefore(LocalDate.now()));
         //添加负责人
         MoreConfig.Manager manager = moreConfig.getManager();
         if (null != manager) {

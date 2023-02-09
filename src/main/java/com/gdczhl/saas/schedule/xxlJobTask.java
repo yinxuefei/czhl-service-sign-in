@@ -105,6 +105,20 @@ public class xxlJobTask {
         }
     }
 
+    @XxlJob("autoEndTask")
+    public void autoEndTask() {
+        //获取所有启用,并合法的项目(未设置用户,未设置设备)
+        //模拟小程序端获取数据
+        LambdaQueryWrapper<SignInTask> signs = new LambdaQueryWrapper<>();
+        signs.eq(SignInTask::getStatus,true);
+        List<SignInTask> signInTasks = signInTaskService.list(signs);
+        for (SignInTask signInTask : signInTasks) {
+            if (signInTask.getTaskStartDate().isAfter(LocalDate.now())&&signInTask.getTaskEndDate().isBefore(LocalDate.now())){
+                signInTask.setStatus(false);
+                signInTaskService.updateById(signInTask);
+            }
+        }
+    }
 
 
     public void createTask(SignInTask signInTask) {

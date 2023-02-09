@@ -24,6 +24,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -61,7 +62,7 @@ public class SignInTaskController {
         TimePeriod timePeriod = saveVo.getTimePeriod();
         BeanUtils.copyProperties(datePeriod, saveBo);
         BeanUtils.copyProperties(timePeriod, saveBo);
-        saveBo.setIsEnable(true);
+        saveBo.setIsEnable(saveBo.getTaskStartDate().isAfter(LocalDate.now()) && saveBo.getTaskEndDate().isBefore(LocalDate.now()));
         return signInTaskService.add(saveBo) ? ResponseVo.success("添加成功") : ResponseVo.fail(EResultCode.InsertDataFail);
     }
 

@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +63,9 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @Autowired
     private IUserService userService;
 
+    @Value("wechat.templateType")
+    private String templateType;
+
     @Override
     public void deviceSignIn(DeviceSignVo deviceSignVo) {
         //1.记录打卡流水(ps:根据打卡时间,拿到所有区间内的任务,更改人员打卡状态)
@@ -96,6 +100,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                     if (signInTask.getPush()) {
                         //ToDO::差推送接口和模板
                         // 推送给自己 拥有userUuid
+
                     }
 
 //                    if (deviceSignVo.getBodyTemperature()>=37.3){
