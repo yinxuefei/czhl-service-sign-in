@@ -461,7 +461,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             signInTaskPageVo.setWeekDays(pageVoWeek);
             signInTaskPageVo.setTimePeriod(SignTasks.getPeriodNameResult(signInTask));
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-            signInTaskPageVo.setDatePeriod(Objects.nonNull(signInTask.getTaskEndDate()) ?
+            signInTaskPageVo.setDatePeriod(signInTask.getTaskStartDate().equals(signInTask.getTaskEndDate()) ?
                     signInTask.getTaskStartDate().format(dateTimeFormatter) + "-" + signInTask.getTaskEndDate().format(dateTimeFormatter) :
                     signInTask.getTaskStartDate().format(dateTimeFormatter));
             if (StringUtils.hasText(signInTask.getUserUuids())) {
