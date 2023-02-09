@@ -212,15 +212,16 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @NotNull
     private SignStatistics SignStatisticsInIt(SignInTask signInTask, LocalDate now, String key) {
         SignStatistics signStatistics = new SignStatistics();
-        BeanUtils.copyProperties(signInTask, signStatistics,"uuid","id","version","createTime","updateTime");
+        BeanUtils.copyProperties(signInTask, signStatistics,"uuid","id","version","createTime","updateTime,creator," +
+                "editor,delete");
         signStatistics.setTaskUuid(signInTask.getUuid());
         signStatistics.setCreateDate(now);
         signStatistics.setIsEnable(false);
-        signStatistics.setInstitutionUuid(ContextCache.getInstitutionUuid());
+        signStatistics.setInstitutionUuid(signInTask.getInstitutionUuid());
         signStatistics.setAllUser(signInTask.getUserUuids());
         signStatisticsService.save(signStatistics);
         stringRedisTemplate.opsForValue().set(
-                key, signStatistics.getUuid(),JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
+                key, signStatistics.getUuid()+"&&0",JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
                 TimeUnit.SECONDS);
 
         RecordInIt(signInTask,signStatistics);
@@ -232,6 +233,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         for (String userUuid : userUuids) {
             String key = RedisConstant.RECORD_KEY+signInTask.getUuid()+userUuid;
             SignInRecord record = new SignInRecord();
+            BeanUtils.copyProperties(signInTask, record,"uuid","id","version","createTime","updateTime,creator," +
+                    "editor,delete");
             record.setSignTaskUuid(signInTask.getUuid());
             record.setSignStatisticsUuid(signStatistics.getUuid());
             User user = userService.getByUserUuid(userUuid);

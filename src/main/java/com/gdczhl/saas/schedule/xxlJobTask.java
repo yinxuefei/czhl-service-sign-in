@@ -11,9 +11,11 @@ import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.enums.WeekEnum;
 import com.gdczhl.saas.pojo.RedisConstant;
 import com.gdczhl.saas.service.*;
+import com.gdczhl.saas.utils.JuheUtil;
 import com.gdczhl.saas.utils.SignTasks;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -27,6 +29,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -56,17 +59,30 @@ public class xxlJobTask {
         List<SignInTask> signInTasks = thirdTaskService.todayTasks(LocalDate.now(), null);
         //时间过期 前一分钟统计
         for (SignInTask signInTask : signInTasks) {
+
+            if (signInTask.getTaskStartTime().isBefore(LocalTime.now())&&signInTask.getTaskEndTime().isAfter(LocalTime.now())){
+                createTask(signInTask);
+            }
+
             //结束任务在之前一分钟,统计
             if (signInTask.getTaskEndTime().plusMinutes(1).isAfter(LocalTime.now())){
                 String statisticsKey = RedisConstant.STATISTICS_UUID_KEY+signInTask.getUuid();
-                String statisticsUuid = stringRedisTemplate.opsForValue().get(statisticsKey);
-                if (StringUtils.isEmpty(statisticsUuid)){
-                    //任务还未开始
+                String statisticsJson = stringRedisTemplate.opsForValue().get(statisticsKey);
+                if (statisticsJson==null){
+                    //漏创建的
                     createTask(signInTask);
                     return;
                 }
-
+                String[] split = statisticsJson.split("&&");
+                String statisticsUuid = split[0];
+                stringRedisTemplate.opsForValue().set(
+                        statisticsKey, statisticsUuid+"&&1", JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
+                        TimeUnit.SECONDS);
                 //统计打卡信息
+                if (split[1].equals("1")){
+                    //已统计
+                    return;
+                }
                 List<SignInRecord> signInRecordList = signInRecordService.getListByStatisticsUuid(statisticsUuid);
                 HashSet<String> alreadyUser = new HashSet<>();
                 HashSet<String> notUser = new HashSet<>();
@@ -88,6 +104,8 @@ public class xxlJobTask {
             }
         }
     }
+
+
 
     public void createTask(SignInTask signInTask) {
         //获取所有启用,并合法的项目(未设置用户,未设置设备)
