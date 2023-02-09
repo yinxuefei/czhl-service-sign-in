@@ -191,6 +191,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setCreateTime(deviceSignVo.getTime());
         record.setStatus(SignStatusEnum.SINGED);
         record.setPush(false);
+        record.setIsEnable(true);
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
@@ -198,6 +199,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
             if (officialAccountVo.isBandMiniapp()){
                 sendWechat(user, device, officialAccountVo);
+                record.setPush(true);
             }
         }
 

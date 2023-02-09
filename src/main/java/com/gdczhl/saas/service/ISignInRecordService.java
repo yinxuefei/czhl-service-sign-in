@@ -33,7 +33,7 @@ public interface ISignInRecordService extends IService<SignInRecord> {
      * @param pageSize
      * @return
      */
-    Page<SignInRecord> getUserSignStatistics(Integer status, String name, String statisticsUuid, Integer pageNo,
+    Page<SignInRecord> getUserSignStatistics(Integer status, String name, Integer pageNo,
                                              Integer pageSize, LocalDate startDate, LocalDate endDate, String taskUuid);
 
 

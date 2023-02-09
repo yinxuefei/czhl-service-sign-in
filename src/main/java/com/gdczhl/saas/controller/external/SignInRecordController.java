@@ -41,13 +41,13 @@ public class SignInRecordController {
     public ResponseVo<PageVo<SignInRecordPageVo>> getSignRecordPage(@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                                                     @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                     @ApiParam("任务uuid") String taskUuid,
-                                                                    @ApiParam("用户姓名") String name,
+                                                                    @ApiParam("用户姓名") String username,
                                                                     @ApiParam("场地code") String areaCode,
                                                                     @ApiParam("分页") @RequestParam(defaultValue = "1") Integer pageNo,
                                                                     @ApiParam("分页大小") @RequestParam(defaultValue = "20") Integer pageSize) {
 
         PageVo<SignInRecordPageVo> signRecordPage = signInRecordService.getSignRecordPage(startDate, endDate, taskUuid
-                , name, areaCode, pageNo, pageSize);
+                , username, areaCode, pageNo, pageSize);
         return ResponseVo.success(signRecordPage);
     }
 
