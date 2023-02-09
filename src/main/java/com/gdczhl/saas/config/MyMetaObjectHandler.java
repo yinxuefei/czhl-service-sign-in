@@ -35,7 +35,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         this.strictUpdateFill(metaObject, "updateTime", LocalDateTime::now, LocalDateTime.class);
         String operatorUuid = (String) ContextCache.getAttribute(HeaderInterceptor.OPERATOR_UUID);
         if (!StringUtils.isEmpty(operatorUuid)) {
-            this.strictInsertFill(metaObject, "editor", () -> operatorUuid, String.class);
+            this.strictUpdateFill(metaObject, "editor", () -> operatorUuid, String.class);
         }
     }
 }

@@ -150,7 +150,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         String userUuid = deviceSignVo.getUserUuid();
 
         //保存任务uuid 已打卡的人员uuid
-        String key = RedisConstant.USER_UUID_KEY + signInTask.getUuid();
+        String key = RedisConstant.USER_UUID_KEY + signStatisticsUUid;
         //判断是否是重复打卡
         Set<String> userUuids = stringRedisTemplate.opsForSet().members(key);
         if (userUuids.contains(userUuid)) {
@@ -185,8 +185,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
         stringRedisTemplate.opsForSet().add(key, userUuid);
-        stringRedisTemplate.expire(key,JuheUtil.getDistanceTomorrowSeconds(LocalDateTime.of(LocalDate.now(),
-                        signInTask.getTaskEndTime())),
+        stringRedisTemplate.expire(key,JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
                 TimeUnit.SECONDS);
         return signInRecordService.update(record,new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getUuid,
                 record.getUuid()));
@@ -221,8 +220,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         signStatistics.setAllUser(signInTask.getUserUuids());
         signStatisticsService.save(signStatistics);
         stringRedisTemplate.opsForValue().set(
-                key, signStatistics.getUuid(),JuheUtil.getDistanceTomorrowSeconds(LocalDateTime.of(now,
-                        signInTask.getTaskEndTime())), TimeUnit.SECONDS);
+                key, signStatistics.getUuid(),JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
+                TimeUnit.SECONDS);
 
         RecordInIt(signInTask,signStatistics);
         return signStatistics;
@@ -242,8 +241,9 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             record.setStatus(SignStatusEnum.NOT_SING);
             record.setIsEnable(false);
             signInRecordService.save(record);
-            stringRedisTemplate.opsForValue().set(key,record.getUuid(),JuheUtil.getDistanceTomorrowSeconds(LocalDateTime.of(LocalDate.now(),
-                    signInTask.getTaskEndTime())), TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(key,record.getUuid(),
+                    JuheUtil.getDistanceTomorrowSeconds((LocalDate.now())),
+                    TimeUnit.SECONDS);
         }
 
     }

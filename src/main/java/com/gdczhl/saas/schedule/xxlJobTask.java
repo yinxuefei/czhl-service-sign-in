@@ -20,6 +20,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -56,9 +57,15 @@ public class xxlJobTask {
         //时间过期 前一分钟统计
         for (SignInTask signInTask : signInTasks) {
             //结束任务在之前一分钟,统计
-            if (signInTask.getTaskEndTime().minusMinutes(1).isAfter(LocalTime.now())){
+            if (signInTask.getTaskEndTime().plusMinutes(1).isAfter(LocalTime.now())){
                 String statisticsKey = RedisConstant.STATISTICS_UUID_KEY+signInTask.getUuid();
                 String statisticsUuid = stringRedisTemplate.opsForValue().get(statisticsKey);
+                if (StringUtils.isEmpty(statisticsUuid)){
+                    //任务还未开始
+                    createTask(signInTask);
+                    return;
+                }
+
                 //统计打卡信息
                 List<SignInRecord> signInRecordList = signInRecordService.getListByStatisticsUuid(statisticsUuid);
                 HashSet<String> alreadyUser = new HashSet<>();
@@ -82,17 +89,9 @@ public class xxlJobTask {
         }
     }
 
-    @XxlJob("createTask")
-    public void createTask() {
+    public void createTask(SignInTask signInTask) {
         //获取所有启用,并合法的项目(未设置用户,未设置设备)
         //模拟小程序端获取数据
-        LocalDate localDate = LocalDate.now();
-        List<SignInTask> signInTasks = thirdTaskService.todayTasks(localDate, null);
-        for (SignInTask signInTask : signInTasks) {
-            if (signInTask.getTaskStartTime().isAfter(LocalTime.now())&&signInTask.getTaskStartTime().isBefore(LocalTime.now())){
-                thirdTaskService.getSignStatisticsUUid(signInTask,localDate);
-            }
-        }
-
+        thirdTaskService.getSignStatisticsUUid(signInTask,LocalDate.now());
     }
 }

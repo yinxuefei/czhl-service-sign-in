@@ -5,10 +5,10 @@ import lombok.Data;
 @Data
 public class RedisConstant {
 
-    //根据任务uuid 获取统计uuid             键值对
+    //根据任务uuid 获取统计uuid             键值对     过期明日凌晨
     public static final String STATISTICS_UUID_KEY = "sign:statistics_uuid:";
 
-    //根据任务uuid 获取已签用户uuid           set
+    //根据统计uuid 获取已签用户uuid           set
     public static final String USER_UUID_KEY = "sign:user_uuid:";
 
     //根据任务uuid 人员uuid 获取已签记录uuid    键值对

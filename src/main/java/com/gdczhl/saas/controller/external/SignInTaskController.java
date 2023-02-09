@@ -1,7 +1,5 @@
 package com.gdczhl.saas.controller.external;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.gdczhl.saas.aspect.annotation.Report;
 import com.gdczhl.saas.enums.PollingModeEnum;
 import com.gdczhl.saas.pojo.DatePeriod;
 import com.gdczhl.saas.pojo.bo.signInTask.*;
@@ -49,7 +47,6 @@ public class SignInTaskController {
 
     @PostMapping("add")
     @ApiOperation("添加任务")
-    @Report
     public ResponseVo<String> addTask(@RequestBody SignInTaskSaveVo saveVo) {
         Assert.notNull(saveVo, "任务为空,添加失败");
         //封装bo

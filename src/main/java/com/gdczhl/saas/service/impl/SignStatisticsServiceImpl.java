@@ -139,7 +139,6 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
         return result;
     }
 
-
     @Override
     public List<SignStatistics> getTodayTasks(LocalDate date, String operatorUuid) {
         LambdaQueryWrapper<SignStatistics> qw = new LambdaQueryWrapper<>();

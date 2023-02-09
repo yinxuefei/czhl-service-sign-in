@@ -85,7 +85,7 @@ public class WeappTaskServiceImpl implements IWeappTaskService {
 
             if (StringUtils.isEmpty(statistics.getAlreadyUser())) {
                 // 任务进行中
-                String key = RedisConstant.USER_UUID_KEY + task.getUuid();
+                String key = RedisConstant.USER_UUID_KEY + statistics.getUuid();
                 Set<String> userUuids = stringRedisTemplate.opsForSet().members(key);
                 if (CollectionUtils.isEmpty(userUuids)) {
                     //已签为0

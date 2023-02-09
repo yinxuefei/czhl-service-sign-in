@@ -124,9 +124,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             }
         }
 
-        if (isExpires(signInTask)) {
-            signInTask.setStatus(false);
-        }
+        signInTask.setStatus(!isExpires(signInTask));
 
         return save(signInTask);
 
@@ -137,11 +135,8 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     }
 
     private static Boolean isExpires(SignInTask signInTask) {
-        if (LocalDate.now().isAfter(signInTask.getTaskEndDate())) {
-            //已失效
-            return true;
-        }
-        return false;
+        //未失效
+        return !LocalDate.now().isAfter(signInTask.getTaskStartDate()) || !LocalDate.now().isBefore(signInTask.getTaskEndDate());
     }
 
 //    private void saveSignStatisticsTask(SignInTask signInTask) {
@@ -407,8 +402,9 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         qw.like(!StringUtils.isEmpty(name), SignInTask::getName, name)
                 .eq(Objects.nonNull(taskStatus), SignInTask::getStatus, taskStatus)
                 .eq(SignInTask::getInstitutionUuid,getInstitutionUuid())
-                .orderByDesc(BaseEntity::getUpdateTime)
-                .orderByDesc(BaseEntity::getCreateTime);
+                .orderByDesc(SignInTask::getStatus)
+                .orderByDesc(SignInTask::getTaskStartDate);
+
 
         page(signInTaskPage, qw);
         return signInTaskPage;
@@ -420,6 +416,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (Objects.isNull(task)) {
             throw new IllegalArgumentException("任务已被删除");
         }
+        task.setStatus(enable);
         task.setIsEnable(enable);
         return updateById(task);
     }
