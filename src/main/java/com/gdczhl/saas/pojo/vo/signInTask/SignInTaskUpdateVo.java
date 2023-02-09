@@ -34,7 +34,7 @@ public class SignInTaskUpdateVo {
     private DatePeriod datePeriod;
 
     @ApiModelProperty("签到方式:0 人脸,1 定位")
-    private List<Integer> signInMode;
+    private List<Integer> signInModes;
 
     @ApiModelProperty("更多设置")
     private MoreConfig moreConfig;
