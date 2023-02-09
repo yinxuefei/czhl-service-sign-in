@@ -580,7 +580,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         LambdaQueryWrapper<Device> qw = new LambdaQueryWrapper<Device>()
                 .in(!CollectionUtils.isEmpty(deviceUuidList), Device::getUuid, deviceUuidList)
                 .like(StringUtils.hasText(name), Device::getName, name)
-                .likeRight(StringUtils.hasText(areaCode), Device::getAreaUuid, areaCode)
+                .likeRight(StringUtils.hasText(areaCode), Device::getAreaCode, areaCode)
                 .like(StringUtils.hasText(number), Device::getNumber, number);
 
         deviceService.page(userPage, qw);
