@@ -33,6 +33,7 @@ spring:
 #    password: root
 wechat:
   templateType: SIGN_IN_TEMPLATE
+  templateId: OWuse-rGTIAaerRW8vm3XIwRr-OYmKNv3aXzxoVg8Ko
 
 
 logging:

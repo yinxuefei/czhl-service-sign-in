@@ -19,7 +19,7 @@ public class OfficialAccountSendVo {
     private List<String> userUuids;
 
     @Data
-    public class ParamsBean{
+    public static class ParamsBean{
         private String first;
         private String keyword1;
         private String keyword2;

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "czhl-service-wechat", path = "/wechat/feign/officialAccount")
-public interface ReportRemoteService {
+public interface WechatRemoteService {
 
     /**获取公众号
      * @return

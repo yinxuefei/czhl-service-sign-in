@@ -6,6 +6,10 @@ import com.gdczhl.saas.entity.*;
 import com.gdczhl.saas.enums.PollingModeEnum;
 import com.gdczhl.saas.pojo.RedisConstant;
 import com.gdczhl.saas.enums.SignStatusEnum;
+import com.gdczhl.saas.service.remote.WechatRemoteService;
+import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountSaveVo;
+import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountSendVo;
+import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountVo;
 import com.gdczhl.saas.utils.ContextCache;
 import com.gdczhl.saas.netty.remote.INettyServiceRemote;
 import com.gdczhl.saas.pojo.vo.SignInInfoVo;
@@ -55,7 +59,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     private ISignStatisticsService signStatisticsService;
 
     @Autowired
-    private INettyServiceRemote nettyServiceRemote;
+    private WechatRemoteService wechatRemoteService;
 
     @Autowired
     private IDeviceService deviceService;
@@ -65,6 +69,9 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
 
     @Value("wechat.templateType")
     private String templateType;
+
+    @Value("wechat.templateId")
+    private String templateId;
 
     @Override
     public void deviceSignIn(DeviceSignVo deviceSignVo) {
@@ -97,11 +104,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                 //打卡
                 if (signIn(deviceSignVo, signInTask)) {
                     //3.打卡成功,任务是否需要推送
-                    if (signInTask.getPush()) {
-                        //ToDO::差推送接口和模板
-                        // 推送给自己 拥有userUuid
-
-                    }
+                    signInTask.getPush();
 
 //                    if (deviceSignVo.getBodyTemperature()>=37.3){
                     //ToDO::差推送接口和模板
@@ -111,6 +114,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             }
         }
     }
+
+
 
     @Override
     public SignInInfoVo signInInfo(String uuid, LocalDateTime time, String deviceUuid) {
@@ -162,7 +167,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             log.info("此次打卡为重复打卡,不做记录");
             return false;
         }
-
+        User user = userService.getByUserUuid(userUuid);
         SignInRecord record = getRecordUuid(signInTask.getUuid(),userUuid);
         if (record==null){
             log.info("当前用户无打卡任务");
@@ -189,12 +194,39 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
+        if (signInTask.getPush()) {
+            OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+            if (officialAccountVo.isBandMiniapp()){
+                sendWechat(user, device, officialAccountVo);
+            }
+        }
+
         stringRedisTemplate.opsForSet().add(key, userUuid);
         stringRedisTemplate.expire(key,JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
                 TimeUnit.SECONDS);
         return signInRecordService.update(record,new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getUuid,
                 record.getUuid()));
 
+    }
+
+    private void sendWechat(User user, Device device, OfficialAccountVo officialAccountVo) {
+        OfficialAccountSaveVo saveVo = new OfficialAccountSaveVo();
+        saveVo.setOfficialAccountUuid(officialAccountVo.getUuid());
+        saveVo.setTemplateId(templateId);
+        saveVo.setTemplateType(templateType);
+        //保存
+        wechatRemoteService.addTemplate(saveVo);
+        OfficialAccountSendVo sendVo = new OfficialAccountSendVo();
+        sendVo.setOfficialAccountUuid(officialAccountVo.getUuid());
+        sendVo.setTemplateType(templateType);
+        OfficialAccountSendVo.ParamsBean paramsBean = new OfficialAccountSendVo.ParamsBean();
+        paramsBean.setFirst("你已成功签到");
+        paramsBean.setKeyword1(device.getAreaAddress());
+        paramsBean.setKeyword2(user.getName());
+        paramsBean.setKeyword3(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm")));
+        paramsBean.setRemark("祝您工作顺利");
+        sendVo.setParams(paramsBean);
+        wechatRemoteService.sendListByUser(sendVo);
     }
 
     private SignInRecord getRecordUuid(String uuid, String userUuid) {
