@@ -455,6 +455,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         List<SignInTaskPageVo> recodes = taskList.stream().map(signInTask -> {
             SignInTaskPageVo signInTaskPageVo = new SignInTaskPageVo();
             BeanUtils.copyProperties(signInTask, signInTaskPageVo);
+            signInTaskPageVo.setSignInModes(JSONObject.parseArray(signInTask.getSignInMode(),Integer.class));
             signInTaskPageVo.setPollingMode(signInTask.getPollingMode().getCode());
             String pageVoWeek = getPageVoWeek(signInTask);
             signInTaskPageVo.setWeekDays(pageVoWeek);

@@ -14,6 +14,7 @@ import com.gdczhl.saas.mapper.SignInRecordMapper;
 import com.gdczhl.saas.service.ISignInRecordService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gdczhl.saas.service.ISignInTaskService;
+import com.gdczhl.saas.utils.CzBeanUtils;
 import com.gdczhl.saas.utils.SignTasks;
 import com.gdczhl.saas.vo.PageVo;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +58,8 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
         LambdaQueryWrapper<SignInRecord> lambda = new LambdaQueryWrapper<>();
         lambda.like(!StringUtils.isEmpty(name), SignInRecord::getUsername, name)
                 .eq(!StringUtils.isEmpty(taskUuid), SignInRecord::getSignTaskUuid, taskUuid)
-                .likeRight(Objects.nonNull(areaCode), SignInRecord::getAreaUuid, areaCode);
+                .likeRight(Objects.nonNull(areaCode), SignInRecord::getAreaUuid, areaCode)
+                .eq(SignInRecord::getStatus,SignStatusEnum.SINGED);
 
 
         if (Objects.nonNull(startDate) && Objects.nonNull(endDate)) {
@@ -85,8 +87,8 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
             signInRecordPageVo.setCreateDate(signInRecord.getCreateTime().toLocalDate().format(dateFormatter));
             signInRecordPageVo.setCreateTime(signInRecord.getCreateTime().toLocalTime().format(timeFormatter));
-            SignInTask task = signInTaskService.getTaskByUuid(signInRecord.getSignTaskUuid());
-            signInRecordPageVo.setPeriodName(SignTasks.getTaskNameResult(task));
+            SignInTask signInTask = CzBeanUtils.copyProperties(signInRecord, SignInTask::new);
+            signInRecordPageVo.setPeriodName(SignTasks.getPeriodNameResult(signInTask));
 
             Float bodyTemperature = signInRecord.getBodyTemperature();
             if (null == bodyTemperature || bodyTemperature < 0.0) {
