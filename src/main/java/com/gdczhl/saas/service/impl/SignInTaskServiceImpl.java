@@ -291,9 +291,8 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     private void addOrDeleteFaceReport(List<String> deviceUuids, SignInTask signInTask, List<String> userUuids,
                                        ReportEnum report) {
+        if (!CollectionUtils.isEmpty(userUuids) && !CollectionUtils.isEmpty(deviceUuids)) {
         if (JSONObject.parseArray(signInTask.getSignInMode(), Integer.class).contains(SignInModeEnum.FACE.getCode())) {
-
-            if (!CollectionUtils.isEmpty(userUuids) && !CollectionUtils.isEmpty(deviceUuids)) {
                 //下发人脸
                 syncProducer.addOrDeleteUserDeviceFlagSaveList(deviceUuids, userUuids, report.getCode());
             }

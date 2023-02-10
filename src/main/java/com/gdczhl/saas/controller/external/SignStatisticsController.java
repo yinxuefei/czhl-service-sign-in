@@ -108,16 +108,17 @@ public class SignStatisticsController {
     @ApiOperation("签到用户详情")
     public ResponseVo<PageVo<UserSignStatisticsVo>> getUserSignStatistics(@ApiParam("签到状态 0未,1已,2补") Integer status,
                                                                           @ApiParam("人员名称") String name,
+                                                                          @ApiParam("统计uuid") String uuid,
                                                                           @ApiParam("pageNo") @RequestParam(defaultValue = "1") Integer pageNo,
                                                                           @ApiParam("pageSize") @RequestParam(defaultValue =
                                                                                   "20") Integer pageSize,
                                                                           @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                                                           @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                                                          @ApiParam("任务uuid") @RequestParam(defaultValue =
-                                                                                  "20") String taskUuid
+                                                                          @ApiParam("任务uuid")  String taskUuid
     ) {
         Page<SignInRecord> signInRecordList = signInRecordService.getUserSignStatistics(status, name, pageNo,
-                pageSize, startDate, endDate, taskUuid);
+                pageSize, startDate, endDate, taskUuid,uuid);
+
         List<SignInRecord> records = signInRecordList.getRecords();
         PageVo<UserSignStatisticsVo> result = new PageVo<>();
         if (CollectionUtils.isEmpty(records)) {

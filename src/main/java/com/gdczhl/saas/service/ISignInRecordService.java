@@ -34,7 +34,8 @@ public interface ISignInRecordService extends IService<SignInRecord> {
      * @return
      */
     Page<SignInRecord> getUserSignStatistics(Integer status, String name, Integer pageNo,
-                                             Integer pageSize, LocalDate startDate, LocalDate endDate, String taskUuid);
+                                             Integer pageSize, LocalDate startDate, LocalDate endDate,
+                                             String taskUuid,String uuid);
 
 
     SignInRecord getByStatisticsUserUuid(String statisticsUuid, String userUuid);
