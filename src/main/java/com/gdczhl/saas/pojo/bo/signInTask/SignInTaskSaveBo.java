@@ -49,7 +49,7 @@ public class SignInTaskSaveBo {
     private Boolean filterFestival;
 
     //签到方式
-    private List<Integer> signInMode;
+    private List<Integer> signInModes;
 
     //更多设置
     private MoreConfig moreConfig;

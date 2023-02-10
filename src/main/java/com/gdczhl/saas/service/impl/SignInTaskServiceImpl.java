@@ -104,7 +104,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         MoreConfig moreConfig = saveBo.getMoreConfig();
         signInTask.setMoreConfig(JSONObject.toJSONString(moreConfig));
         signInTask.setPollingMode(PollingModeEnum.getByCode(saveBo.getPollingMode()));
-        signInTask.setSignInMode(JSONObject.toJSONString(saveBo.getSignInMode()));
+        signInTask.setSignInMode(JSONObject.toJSONString(saveBo.getSignInModes()));
         signInTask.setStatus(saveBo.getTaskStartDate().isAfter(LocalDate.now()) && saveBo.getTaskEndDate().isBefore(LocalDate.now()));
         //添加负责人
         MoreConfig.Manager manager = moreConfig.getManager();
@@ -359,8 +359,8 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         } else {
             signInTask.setWeek(JSONObject.toJSONString(updateBo.getWeekDays()));
         }
-        if (Objects.nonNull(updateBo.getSignInMode())) {
-            signInTask.setSignInMode(JSONObject.toJSONString(updateBo.getSignInMode()));
+        if (Objects.nonNull(updateBo.getSignInModes())) {
+            signInTask.setSignInMode(JSONObject.toJSONString(updateBo.getSignInModes()));
         }
         if (Objects.nonNull(updateBo.getPollingMode())) {
             signInTask.setPollingMode(PollingModeEnum.getByCode(updateBo.getPollingMode()));
