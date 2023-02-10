@@ -114,10 +114,12 @@ public class xxlJobTask {
         for (SignInTask signInTask : signInTasks) {
             if (signInTask.getTaskStartDate().isAfter(LocalDate.now())&&signInTask.getTaskEndDate().isBefore(LocalDate.now())){
                 signInTask.setStatus(false);
+                signInTask.setIsEnable(false);
                 signInTaskService.updateById(signInTask);
             }
         }
     }
+
 
 
     public void createTask(SignInTask signInTask) {

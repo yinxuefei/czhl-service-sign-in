@@ -9,6 +9,7 @@ import com.gdczhl.saas.entity.SignInTask;
 import com.gdczhl.saas.entity.User;
 import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.pojo.MoreConfig;
+import com.gdczhl.saas.pojo.RedisConstant;
 import com.gdczhl.saas.service.ISignInRecordService;
 import com.gdczhl.saas.service.ISignInTaskService;
 import com.gdczhl.saas.service.ISignStatisticsService;
@@ -23,6 +24,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,9 @@ public class UserController {
 
     @Autowired
     private ISignInRecordService signInRecordService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private IUserService userService;
@@ -70,7 +76,6 @@ public class UserController {
                 if (!CollectionUtils.isEmpty(managerUuids) && managerUuids.contains(userUuid)){
                     return ResponseVo.success(true);
                 }
-
             }
         }
         return ResponseVo.success(false);
@@ -90,21 +95,29 @@ public class UserController {
         for (SignInTask todayTask : todayTasks) {
             UserTaskVo vo = new UserTaskVo();
             CzBeanUtils.copyProperties(todayTask,vo);
+            vo.setUserUuid(userUuid);
             String uuid = todayTask.getUuid();
-            SignInRecord record = signInRecordService.getTaskByDateUuid(date,todayTask.getTaskStartTime(),
-                    todayTask.getTaskEndTime(),uuid, userUuid);
-            if (Objects.isNull(record)){
-                //还未开始打卡
+            LocalTime startTime = todayTask.getTaskStartTime();
+            LocalTime endTime = todayTask.getTaskEndTime();
+            LocalTime now = LocalTime.now();
+
+            SignInRecord record = getRecordUuid(todayTask.getUuid(), userUuid);
+
+            if (now.isBefore(startTime)){
                 vo.setTaskStatus(0);
                 result.add(vo);
                 continue;
             }
-            if (LocalDateTime.now().isBefore(LocalDateTime.of(date,todayTask.getTaskEndTime()))){
+
+            if (now.isAfter(startTime)&&now.isBefore(endTime)){
                 //进行中
                 vo.setTaskStatus(1);
+                if (record==null){
+                    vo.setSignStatus(SignStatusEnum.NOT_SING.getCode());
+                    continue;
+                }
                 vo.setSignStatus(record.getStatus().getCode());
                 BeanUtils.copyProperties(record,vo);
-                vo.setTaskStatus(record.getStatus().getCode());
                 vo.setSignTime(record.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 vo.setPicture(record.getSignImageUrl());
                 result.add(vo);
@@ -112,13 +125,21 @@ public class UserController {
             }
                 //已结束
                 vo.setTaskStatus(2);
+                if (record==null){
+                vo.setSignStatus(SignStatusEnum.NOT_SING.getCode());
+                continue;
+                 }
                 vo.setSignStatus(record.getStatus().getCode());
                 BeanUtils.copyProperties(record,vo);
-                vo.setTaskStatus(record.getStatus().getCode());
                 vo.setSignTime(record.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 vo.setPicture(record.getSignImageUrl());
                 result.add(vo);
         }
         return ResponseVo.success(result);
+    }
+
+    private SignInRecord getRecordUuid(String uuid, String userUuid) {
+        String recordUuid = stringRedisTemplate.opsForValue().get(RedisConstant.RECORD_KEY + uuid + userUuid);
+        return signInRecordService.getByUuid(recordUuid);
     }
 }

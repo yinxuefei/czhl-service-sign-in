@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -39,7 +40,9 @@ public class ThirdTaskController {
             "-dd") LocalDate date, @ApiParam("设备uuid") String deviceUuid ) {
         List<SignInTask> signInTasks = thirdTaskService.todayTasks(date,deviceUuid);
 
-        List<ReportTaskVo> list = signInTasks.stream().map(signInTask -> {
+        List<ReportTaskVo> list = signInTasks.stream().filter(signInTask -> {
+            return StringUtils.hasText(signInTask.getDeviceUuids())&&StringUtils.hasText(signInTask.getUserUuids());
+        }).map(signInTask -> {
             ReportTaskVo reportTaskVo = new ReportTaskVo();
             BeanUtils.copyProperties(signInTask, reportTaskVo);
             MoreConfig moreConfigs = JSONObject.parseObject(signInTask.getMoreConfig(), MoreConfig.class);
