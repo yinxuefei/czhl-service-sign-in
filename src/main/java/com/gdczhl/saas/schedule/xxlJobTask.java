@@ -65,7 +65,7 @@ public class xxlJobTask {
             }
 
             //结束任务在之前一分钟,统计
-            if (signInTask.getTaskEndTime().plusMinutes(1).isBefore(LocalTime.now())){
+            if (signInTask.getTaskEndTime().plusMinutes(1).isAfter(LocalTime.now())){
                 String statisticsKey = RedisConstant.STATISTICS_UUID_KEY+signInTask.getUuid();
                 String statisticsJson = stringRedisTemplate.opsForValue().get(statisticsKey);
                 if (statisticsJson==null){

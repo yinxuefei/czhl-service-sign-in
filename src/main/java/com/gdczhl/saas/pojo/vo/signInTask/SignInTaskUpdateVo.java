@@ -1,5 +1,6 @@
 package com.gdczhl.saas.pojo.vo.signInTask;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gdczhl.saas.pojo.DatePeriod;
 import com.gdczhl.saas.pojo.MoreConfig;
 import com.gdczhl.saas.pojo.TimePeriod;
@@ -24,6 +25,7 @@ public class SignInTaskUpdateVo {
     private Integer pollingMode;
 
     @ApiModelProperty("签到日")
+    @JsonFormat
     private List<Integer> weekDays;
 
     private List<String> dateDays;
@@ -34,6 +36,7 @@ public class SignInTaskUpdateVo {
     private DatePeriod datePeriod;
 
     @ApiModelProperty("签到方式:0 人脸,1 定位")
+    @JsonFormat
     private List<Integer> signInModes;
 
     @ApiModelProperty("更多设置")

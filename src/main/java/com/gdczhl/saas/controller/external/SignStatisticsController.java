@@ -116,7 +116,7 @@ public class SignStatisticsController {
                                                                           @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                           @ApiParam("任务uuid")  String taskUuid
     ) {
-        Page<SignInRecord> signInRecordList = signInRecordService.getUserSignStatistics(status, name, pageNo,
+        Page<SignInRecord> signInRecordList =  signInRecordService.getUserSignStatistics(status, name, pageNo,
                 pageSize, startDate, endDate, taskUuid,uuid);
 
         List<SignInRecord> records = signInRecordList.getRecords();
