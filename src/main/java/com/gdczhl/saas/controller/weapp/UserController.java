@@ -119,7 +119,9 @@ public class UserController {
                 }
                 vo.setSignStatus(record.getStatus().getCode());
                 BeanUtils.copyProperties(record,vo);
-                vo.setSignTime(record.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                if (Objects.nonNull(record.getUpdateTime())){
+                vo.setSignTime(record.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                }
                 vo.setPicture(record.getSignImageUrl());
                 result.add(vo);
                 continue;

@@ -130,9 +130,9 @@ public class SignStatisticsController {
             BeanUtils.copyProperties(signInRecord, vo);
             vo.setCreateDate(signInRecord.getCreateTime().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy.MM" +
                     ".dd")));
-            vo.setCreateTime(signInRecord.getCreateTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-            if (signInRecord.getStatus().equals(SignStatusEnum.NOT_SING)){
-                vo.setCreateTime("");
+            vo.setCreateTime("");
+            if (signInRecord.getStatus().equals(SignStatusEnum.SINGED)){
+                vo.setCreateTime(signInRecord.getUpdateTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
             }
             vo.setStatus(signInRecord.getStatus().getCode());
             return vo;

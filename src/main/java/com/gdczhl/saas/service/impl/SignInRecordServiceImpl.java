@@ -86,7 +86,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
             signInRecordPageVo.setCreateDate(signInRecord.getCreateTime().toLocalDate().format(dateFormatter));
-            signInRecordPageVo.setCreateTime(signInRecord.getCreateTime().toLocalTime().format(timeFormatter));
+            signInRecordPageVo.setCreateTime(signInRecord.getUpdateTime().toLocalTime().format(timeFormatter));
             SignInTask signInTask = CzBeanUtils.copyProperties(signInRecord, SignInTask::new);
             signInRecordPageVo.setPeriodName(SignTasks.getPeriodNameResult(signInTask));
 
