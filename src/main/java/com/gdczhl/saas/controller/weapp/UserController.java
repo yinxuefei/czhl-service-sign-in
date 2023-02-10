@@ -91,17 +91,18 @@ public class UserController {
         }
 
        List<SignInTask> todayTasks = signInTaskService.getUserTodayTasks(date, userUuid);
+
         ArrayList<UserTaskVo> result = new ArrayList<>();
         for (SignInTask todayTask : todayTasks) {
             UserTaskVo vo = new UserTaskVo();
             CzBeanUtils.copyProperties(todayTask,vo);
             vo.setUserUuid(userUuid);
-            String uuid = todayTask.getUuid();
             LocalTime startTime = todayTask.getTaskStartTime();
             LocalTime endTime = todayTask.getTaskEndTime();
             LocalTime now = LocalTime.now();
 
-            SignInRecord record = getRecordUuid(todayTask.getUuid(), userUuid);
+            SignInRecord record = signInRecordService.getTaskByDateUuid(date, todayTask.getTaskStartTime(), todayTask.getTaskEndTime(),
+                    todayTask.getUuid(), userUuid);
 
             if (now.isBefore(startTime)){
                 vo.setTaskStatus(0);
