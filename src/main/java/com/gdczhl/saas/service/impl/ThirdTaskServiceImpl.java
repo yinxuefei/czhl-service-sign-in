@@ -275,8 +275,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         for (String userUuid : userUuids) {
             String key = RedisConstant.RECORD_KEY+signInTask.getUuid()+userUuid;
             SignInRecord record = new SignInRecord();
-            BeanUtils.copyProperties(signInTask, record,"uuid","id","version","createTime","updateTime,creator," +
-                    "editor,delete");
+            BeanUtils.copyProperties(signInTask, record,"uuid","id","version","createTime","updateTime",
+                    "creator","editor,delete");
             record.setSignTaskUuid(signInTask.getUuid());
             record.setSignStatisticsUuid(signStatistics.getUuid());
             User user = userService.getByUserUuid(userUuid);
