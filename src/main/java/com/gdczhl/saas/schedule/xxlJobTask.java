@@ -93,6 +93,7 @@ public class xxlJobTask {
                     if (record.getStatus().equals(SignStatusEnum.RESIGN)){
                         alreadyUser.add(record.getUserUuid());
                     }
+                    record.setIsEnable(true);
                     signInRecordService.updateByUuid(record);
                 }
                 SignStatistics statistics = signStatisticsService.getStatisticsByUuid(statisticsUuid);
