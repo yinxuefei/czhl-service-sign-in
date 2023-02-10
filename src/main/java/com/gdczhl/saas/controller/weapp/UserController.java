@@ -97,15 +97,15 @@ public class UserController {
             UserTaskVo vo = new UserTaskVo();
             CzBeanUtils.copyProperties(todayTask,vo);
             vo.setUserUuid(userUuid);
-            LocalTime startTime = todayTask.getTaskStartTime();
-            LocalTime endTime = todayTask.getTaskEndTime();
-            LocalTime now = LocalTime.now();
+            LocalDateTime startTime = LocalDateTime.of(date,todayTask.getTaskStartTime());
+            LocalDateTime endTime =  LocalDateTime.of(date,todayTask.getTaskEndTime());
+            LocalDateTime now = LocalDateTime.now();
 
             SignInRecord record = signInRecordService.getTaskByDateUuid(date, todayTask.getTaskStartTime(), todayTask.getTaskEndTime(),
                     todayTask.getUuid(), userUuid);
 
             if (now.isBefore(startTime)){
-                vo.setTaskStatus(0);
+                vo.setTaskStatus(1);
                 result.add(vo);
                 continue;
             }
@@ -128,6 +128,7 @@ public class UserController {
                 vo.setTaskStatus(2);
                 if (record==null){
                 vo.setSignStatus(SignStatusEnum.NOT_SING.getCode());
+                result.add(vo);
                 continue;
                  }
                 vo.setSignStatus(record.getStatus().getCode());
