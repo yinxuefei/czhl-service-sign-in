@@ -55,17 +55,16 @@ public class xxlJobTask {
     private IUserService userService;
 
     @XxlJob("statisticsTask")
-    public void statisticsTask() {
-        List<SignInTask> signInTasks = thirdTaskService.todayTasks(LocalDate.now(), null);
+    public void statisticsTask() {List<SignInTask> signInTasks = thirdTaskService.todayTasks(LocalDate.now(), null);
         //时间过期 前一分钟统计
         for (SignInTask signInTask : signInTasks) {
 
-            if (signInTask.getTaskStartTime().isBefore(LocalTime.now())&&signInTask.getTaskEndTime().isAfter(LocalTime.now())){
+            if (LocalTime.now().isAfter(signInTask.getTaskStartTime())&&LocalTime.now().isBefore(signInTask.getTaskEndTime())){
                 createTask(signInTask);
             }
 
             //结束任务在之前一分钟,统计
-            if (signInTask.getTaskEndTime().plusMinutes(1).isAfter(LocalTime.now())){
+            if (LocalTime.now().isAfter(signInTask.getTaskEndTime().plusMinutes(1))){
                 String statisticsKey = RedisConstant.STATISTICS_UUID_KEY+signInTask.getUuid();
                 String statisticsJson = stringRedisTemplate.opsForValue().get(statisticsKey);
                 if (statisticsJson==null){

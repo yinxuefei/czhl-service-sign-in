@@ -58,7 +58,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
         LambdaQueryWrapper<SignInRecord> lambda = new LambdaQueryWrapper<>();
         lambda.like(!StringUtils.isEmpty(name), SignInRecord::getUsername, name)
                 .eq(!StringUtils.isEmpty(taskUuid), SignInRecord::getSignTaskUuid, taskUuid)
-                .likeRight(Objects.nonNull(areaCode), SignInRecord::getAreaUuid, areaCode)
+                .likeRight(StringUtils.hasText(areaCode), SignInRecord::getAreaCode, areaCode)
                 .eq(SignInRecord::getStatus,SignStatusEnum.SINGED);
 
 

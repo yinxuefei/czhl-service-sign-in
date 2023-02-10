@@ -3,15 +3,11 @@ package com.gdczhl.saas.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.gdczhl.saas.entity.*;
-import com.gdczhl.saas.enums.PollingModeEnum;
 import com.gdczhl.saas.pojo.RedisConstant;
 import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.service.remote.WechatRemoteService;
-import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountSaveVo;
 import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountSendVo;
 import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountVo;
-import com.gdczhl.saas.utils.ContextCache;
-import com.gdczhl.saas.netty.remote.INettyServiceRemote;
 import com.gdczhl.saas.pojo.vo.SignInInfoVo;
 import com.gdczhl.saas.pojo.vo.signInTask.DeviceSignVo;
 import com.gdczhl.saas.service.*;
@@ -105,7 +101,6 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                 if (signIn(deviceSignVo, signInTask)) {
                     //3.打卡成功,任务是否需要推送
                     signInTask.getPush();
-
 //                    if (deviceSignVo.getBodyTemperature()>=37.3){
                     //ToDO::差推送接口和模板
                     // 推送给体温异常推送人 拥有userUuid
@@ -177,6 +172,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setDeviceUuid(deviceUuid);
         record.setAreaUuid(device.getAreaUuid());
         record.setAreaAddress(device.getAreaAddress());
+        record.setAreaCode(device.getAreaCode());
         record.setNumberSn(device.getNumberSn());
 
         if (deviceSignVo.getSignImageUrl()!=null){
@@ -195,13 +191,25 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
-        if (signInTask.getPush()) {
-            OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
-            if (officialAccountVo.isBandMiniapp()){
-                sendWechat(user, device, officialAccountVo);
-                record.setPush(true);
-            }
+
+
+//        if (signInTask.getPush()) {
+//            OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+//            if (officialAccountVo.isBandMiniapp()){
+//                sendWechat(user, device, officialAccountVo);
+//                record.setPush(true);
+//            }
+//        }
+
+        SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
+        String alreadyUser = statisticsByUuid.getAlreadyUser();
+        List<String> users = new ArrayList<>();
+        if (!StringUtils.isBlank(alreadyUser)){
+            users = JSONObject.parseArray(alreadyUser, String.class);
         }
+        users.add(userUuid);
+        statisticsByUuid.setAlreadyUser(JSONObject.toJSONString(users));
+        signStatisticsService.updateById(statisticsByUuid);
 
         stringRedisTemplate.opsForSet().add(key, userUuid);
         stringRedisTemplate.expire(key,JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
@@ -234,13 +242,13 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     public String getSignStatisticsUUid(SignInTask signInTask, LocalDate now) {
         //key taskUuid  value StatisticsUuid
         String key = RedisConstant.STATISTICS_UUID_KEY + signInTask.getUuid();
-        String statisticsUuid = stringRedisTemplate.opsForValue().get(key);
-        if (StringUtils.isBlank(statisticsUuid)) {
+        String statisticsUuidJson = stringRedisTemplate.opsForValue().get(key);
+        if (StringUtils.isBlank(statisticsUuidJson)) {
             //统计初始化
             SignStatistics signStatistics = SignStatisticsInIt(signInTask, now, key);
             return signStatistics.getUuid();
         }
-        return statisticsUuid;
+        return statisticsUuidJson.split("&&")[0];
     }
 
     @NotNull
