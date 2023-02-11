@@ -8,6 +8,7 @@ import com.gdczhl.saas.entity.SignInRecord;
 import com.gdczhl.saas.entity.SignInTask;
 import com.gdczhl.saas.entity.User;
 import com.gdczhl.saas.enums.SignStatusEnum;
+import com.gdczhl.saas.enums.TaskStatusEnum;
 import com.gdczhl.saas.pojo.MoreConfig;
 import com.gdczhl.saas.pojo.RedisConstant;
 import com.gdczhl.saas.service.ISignInRecordService;
@@ -105,14 +106,14 @@ public class UserController {
                     todayTask.getUuid(), userUuid);
 
             if (now.isBefore(startTime)){
-                vo.setTaskStatus(0);
+                vo.setTaskStatus(TaskStatusEnum.NOT_STARTED.getCode());
                 result.add(vo);
                 continue;
             }
 
             if (now.isAfter(startTime)&&now.isBefore(endTime)){
                 //进行中
-                vo.setTaskStatus(1);
+                vo.setTaskStatus(TaskStatusEnum.UNDERWAY.getCode());
                 if (record==null){
                     vo.setSignStatus(SignStatusEnum.NOT_SING.getCode());
                     continue;
@@ -127,7 +128,7 @@ public class UserController {
                 continue;
             }
                 //已结束
-                vo.setTaskStatus(2);
+                vo.setTaskStatus(TaskStatusEnum.STOP.getCode());
                 if (record==null){
                 vo.setSignStatus(SignStatusEnum.NOT_SING.getCode());
                 result.add(vo);
