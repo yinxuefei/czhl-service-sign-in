@@ -83,7 +83,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         LocalTime time = localDateTime.toLocalTime();
 
         //1.查询日期所有任务
-        List<SignInTask> signList = todayTasks(date,deviceUuid);
+        List<SignInTask> signList = todayTasks(date, deviceUuid);
 
         //判断需要对那些任务打卡
         List<SignInTask> signInTasks = signList.stream().filter(signInTask -> {
@@ -110,7 +110,6 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             }
         }
     }
-
 
 
     @Override
@@ -143,9 +142,9 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     }
 
     @Override
-    public List<SignInTask> todayTasks(LocalDate date,String deviceUuid) {
+    public List<SignInTask> todayTasks(LocalDate date, String deviceUuid) {
         //1.查询当日所有任务
-        return signInTaskService.getTodayTasks(date,deviceUuid);
+        return signInTaskService.getTodayTasks(date, deviceUuid);
     }
 
 
@@ -164,8 +163,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             return false;
         }
         User user = userService.getByUserUuid(userUuid);
-        SignInRecord record = getRecordUuid(signInTask.getUuid(),userUuid);
-        if (record==null){
+        SignInRecord record = getRecordUuid(signInTask.getUuid(), userUuid);
+        if (record == null) {
             log.info("当前用户无打卡任务");
             return true;
         }
@@ -176,7 +175,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setAreaCode(device.getAreaCode());
         record.setNumberSn(device.getNumberSn());
 
-        if (deviceSignVo.getSignImageUrl()!=null){
+        if (deviceSignVo.getSignImageUrl() != null) {
             record.setSignImageUrl(deviceSignVo.getSignImageUrl());
         }
         record.setTaskName(signInTask.getTaskName());
@@ -193,11 +192,10 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
 
-
         if (signInTask.getPush()) {
             OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
-            if (officialAccountVo.isBandMiniapp()){
-                sendWechat(signInTask,user, device, officialAccountVo);
+            if (officialAccountVo.isBandMiniapp()) {
+                sendWechat(signInTask, user, device, officialAccountVo);
                 record.setPush(true);
             }
         }
@@ -205,7 +203,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
         List<String> users = new ArrayList<>();
-        if (!StringUtils.isBlank(alreadyUser)){
+        if (!StringUtils.isBlank(alreadyUser)) {
             users = JSONObject.parseArray(alreadyUser, String.class);
         }
         users.add(userUuid);
@@ -213,9 +211,9 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         signStatisticsService.updateById(statisticsByUuid);
 
         stringRedisTemplate.opsForSet().add(key, userUuid);
-        stringRedisTemplate.expire(key,JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
+        stringRedisTemplate.expire(key, JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
                 TimeUnit.SECONDS);
-        return signInRecordService.update(record,new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getUuid,
+        return signInRecordService.update(record, new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getUuid,
                 record.getUuid()));
 
     }
@@ -228,7 +226,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         sendVo.setTemplateType(templateType);
         sendVo.setUserUuids(Arrays.asList(user.getUuid()));
         OfficialAccountSendVo.ParamsBean paramsBean = new OfficialAccountSendVo.ParamsBean();
-        paramsBean.setFirst(String.format("您好,【%s】已成功签到",signInTask.getName()));
+        paramsBean.setFirst(String.format("您好,【%s】已成功签到", signInTask.getName()));
         paramsBean.setKeyword1(device.getAreaAddress());
         paramsBean.setKeyword2(user.getName());
         paramsBean.setKeyword3(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm")));
@@ -236,7 +234,6 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         sendVo.setParams(paramsBean);
         wechatRemoteService.sendListByUser(sendVo);
     }
-
 
 
     private SignInRecord getRecordUuid(String uuid, String userUuid) {
@@ -259,7 +256,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @NotNull
     private SignStatistics SignStatisticsInIt(SignInTask signInTask, LocalDate now, String key) {
         SignStatistics signStatistics = new SignStatistics();
-        BeanUtils.copyProperties(signInTask, signStatistics,"uuid","id","version","createTime","updateTime,creator," +
+        BeanUtils.copyProperties(signInTask, signStatistics, "uuid", "id", "version", "createTime", "updateTime,creator," +
                 "editor,delete");
         signStatistics.setTaskUuid(signInTask.getUuid());
         signStatistics.setCreateDate(now);
@@ -268,20 +265,20 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         signStatistics.setAllUser(signInTask.getUserUuids());
         signStatisticsService.save(signStatistics);
         stringRedisTemplate.opsForValue().set(
-                key, signStatistics.getUuid()+"&&0",JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
+                key, signStatistics.getUuid() + "&&0", JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),
                 TimeUnit.SECONDS);
 
-        RecordInIt(signInTask,signStatistics);
+        RecordInIt(signInTask, signStatistics);
         return signStatistics;
     }
 
     private void RecordInIt(SignInTask signInTask, SignStatistics signStatistics) {
         List<String> userUuids = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
         for (String userUuid : userUuids) {
-            String key = RedisConstant.RECORD_KEY+signInTask.getUuid()+userUuid;
+            String key = RedisConstant.RECORD_KEY + signInTask.getUuid() + userUuid;
             SignInRecord record = new SignInRecord();
-            BeanUtils.copyProperties(signInTask, record,"uuid","id","version","createTime","updateTime",
-                    "creator","editor,delete");
+            BeanUtils.copyProperties(signInTask, record, "uuid", "id", "version", "createTime", "updateTime",
+                    "creator", "editor,delete");
             record.setSignTaskUuid(signInTask.getUuid());
             record.setSignStatisticsUuid(signStatistics.getUuid());
             User user = userService.getByUserUuid(userUuid);
@@ -291,7 +288,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             record.setStatus(SignStatusEnum.NOT_SING);
             record.setIsEnable(false);
             signInRecordService.save(record);
-            stringRedisTemplate.opsForValue().set(key,record.getUuid(),
+            stringRedisTemplate.opsForValue().set(key, record.getUuid(),
                     JuheUtil.getDistanceTomorrowSeconds((LocalDate.now())),
                     TimeUnit.SECONDS);
         }

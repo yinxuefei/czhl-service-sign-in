@@ -18,11 +18,11 @@ import java.util.List;
  */
 public interface IThirdTaskService {
 
-    List<SignInTask> todayTasks(LocalDate date,String deviceUuid);
+    List<SignInTask> todayTasks(LocalDate date, String deviceUuid);
 
     void deviceSignIn(DeviceSignVo deviceSignVo);
 
-    SignInInfoVo signInInfo(String uuid, LocalDateTime time,String deviceUuid );
+    SignInInfoVo signInInfo(String uuid, LocalDateTime time, String deviceUuid);
 
     public String getSignStatisticsUUid(SignInTask signInTask, LocalDate now);
 }

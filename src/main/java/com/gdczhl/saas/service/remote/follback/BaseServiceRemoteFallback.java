@@ -38,4 +38,9 @@ public class BaseServiceRemoteFallback implements BaseServiceRemote {
     public ResponseVo<InstitutionVo> get(String uuid) {
         return null;
     }
+
+    @Override
+    public ResponseVo<List<OrganizationVo>> listTeacherOrganizationsByParentUuid(String uuid) {
+        return null;
+    }
 }

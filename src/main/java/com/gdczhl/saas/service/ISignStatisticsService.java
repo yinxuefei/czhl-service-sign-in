@@ -30,7 +30,7 @@ public interface ISignStatisticsService extends IService<SignStatistics> {
 
     List<SignStatistics> getTodayTasks(LocalDate date, String operatorUuid);
 
-    SignStatistics getStatisticsByTaskUuid(String taskUuid,LocalDate date);
+    SignStatistics getStatisticsByTaskUuid(String taskUuid, LocalDate date);
 
     void updateByUuid(SignStatistics statistics);
 }

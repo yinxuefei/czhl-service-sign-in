@@ -194,7 +194,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         List<TaskNameVo> result = new ArrayList<>();
         LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<SignInTask>()
                 .eq(Objects.nonNull(status), SignInTask::getStatus, status)
-                .eq(SignInTask::getInstitutionUuid,getInstitutionUuid())
+                .eq(SignInTask::getInstitutionUuid, getInstitutionUuid())
                 .orderByDesc(BaseEntity::getCreateTime);
         List<SignInTask> list = list(qw);
         if (CollectionUtils.isEmpty(list)) {
@@ -234,7 +234,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         if (updateById(signInTask)) {
             //任务,允许人脸签到
-            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids,ReportEnum.ADD);
+            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids, ReportEnum.ADD);
             return true;
         } else {
             return false;
@@ -242,7 +242,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     }
 
     private void saveUser(List<String> userUuids) {
-        if (CollectionUtils.isEmpty(userUuids)){
+        if (CollectionUtils.isEmpty(userUuids)) {
             return;
         }
         //查本地库
@@ -292,7 +292,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     private void addOrDeleteFaceReport(List<String> deviceUuids, SignInTask signInTask, List<String> userUuids,
                                        ReportEnum report) {
         if (!CollectionUtils.isEmpty(userUuids) && !CollectionUtils.isEmpty(deviceUuids)) {
-        if (JSONObject.parseArray(signInTask.getSignInMode(), Integer.class).contains(SignInModeEnum.FACE.getCode())) {
+            if (JSONObject.parseArray(signInTask.getSignInMode(), Integer.class).contains(SignInModeEnum.FACE.getCode())) {
                 //下发人脸
                 syncProducer.addOrDeleteUserDeviceFlagSaveList(deviceUuids, userUuids, report.getCode());
             }
@@ -300,7 +300,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     }
 
     private void saveDevice(List<String> deviceUuids) {
-        if (CollectionUtils.isEmpty(deviceUuids)){
+        if (CollectionUtils.isEmpty(deviceUuids)) {
             return;
         }
 
@@ -315,8 +315,8 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             for (DeviceInfoVo deviceInfoVo : deviceInfoVoList) {
                 Device device = new Device();
                 BeanUtils.copyProperties(deviceInfoVo, device);
-                if (StringUtils.hasText(device.getAreaUuid())){
-                    log.info("{}设备的地区uuid:{}",deviceInfoVo.getName(),device.getAreaUuid());
+                if (StringUtils.hasText(device.getAreaUuid())) {
+                    log.info("{}设备的地区uuid:{}", deviceInfoVo.getName(), device.getAreaUuid());
                     ResponseVo<AreaBriefInfoVo> remoteServiceInfoByUuid = areaRemoteService.findInfoByUuid(device.getAreaUuid());
                     AreaBriefInfoVo flagSaveListBo = SignTasks.checkHttpResponse(remoteServiceInfoByUuid);
                     device.setAreaCode(flagSaveListBo.getAreaCode());
@@ -368,13 +368,13 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (Objects.nonNull(updateBo.getMoreConfig())) {
             signInTask.setMoreConfig(JSONObject.toJSONString(updateBo.getMoreConfig()));
             MoreConfig moreConfig = updateBo.getMoreConfig();
-            if (moreConfig.getManager()!= null && moreConfig.getManager().getIsManager()){
+            if (moreConfig.getManager() != null && moreConfig.getManager().getIsManager()) {
                 saveUser(moreConfig.getManager().getManagerUuids());
             }
-            if (moreConfig.getReportPush()!= null && moreConfig.getReportPush().getIsReportPush()){
+            if (moreConfig.getReportPush() != null && moreConfig.getReportPush().getIsReportPush()) {
                 saveUser(moreConfig.getReportPush().getPusherUuids());
             }
-            if (moreConfig.getBodyTemperature()!= null && moreConfig.getBodyTemperature().getIsPush()){
+            if (moreConfig.getBodyTemperature() != null && moreConfig.getBodyTemperature().getIsPush()) {
                 saveUser(moreConfig.getBodyTemperature().getPushUuids());
             }
         }
@@ -384,7 +384,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     private Boolean updateByUuid(SignInTask signInTask) {
         LambdaUpdateWrapper<SignInTask> eq = new LambdaUpdateWrapper<SignInTask>().eq(SignInTask::getUuid, signInTask.getUuid());
-        return update(signInTask,eq);
+        return update(signInTask, eq);
     }
 
 //    private void deleteSignStatisticsTask(SignInTask signInTask) {
@@ -400,7 +400,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<>();
         qw.like(!StringUtils.isEmpty(name), SignInTask::getName, name)
                 .eq(Objects.nonNull(taskStatus), SignInTask::getStatus, taskStatus)
-                .eq(SignInTask::getInstitutionUuid,getInstitutionUuid())
+                .eq(SignInTask::getInstitutionUuid, getInstitutionUuid())
                 .orderByDesc(SignInTask::getStatus)
                 .orderByDesc(SignInTask::getTaskStartDate);
 
@@ -455,7 +455,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         List<SignInTaskPageVo> recodes = taskList.stream().map(signInTask -> {
             SignInTaskPageVo signInTaskPageVo = new SignInTaskPageVo();
             BeanUtils.copyProperties(signInTask, signInTaskPageVo);
-            signInTaskPageVo.setSignInModes(JSONObject.parseArray(signInTask.getSignInMode(),Integer.class));
+            signInTaskPageVo.setSignInModes(JSONObject.parseArray(signInTask.getSignInMode(), Integer.class));
             signInTaskPageVo.setPollingMode(signInTask.getPollingMode().getCode());
             String pageVoWeek = getPageVoWeek(signInTask);
             signInTaskPageVo.setWeekDays(pageVoWeek);
@@ -513,15 +513,15 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         }
         List<String> userUuids = new ArrayList<>();
         List<String> deviceUuids = new ArrayList<>();
-        if (StringUtils.hasText(signInTask.getUserUuids())){
+        if (StringUtils.hasText(signInTask.getUserUuids())) {
             userUuids = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
         }
-        if (StringUtils.hasText(signInTask.getDeviceUuids())){
+        if (StringUtils.hasText(signInTask.getDeviceUuids())) {
             deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids(), String.class);
         }
 
-        if (removeById(signInTask)){
-            addOrDeleteFaceReport(deviceUuids, signInTask,userUuids,ReportEnum.DELETE);
+        if (removeById(signInTask)) {
+            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids, ReportEnum.DELETE);
             //删除统计
             signInRecordService.deleteByTaskUuid(signInTask.getUuid());
             return true;
@@ -531,28 +531,36 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     @Override
     public PageVo<UserPageVo> pageUser(String uuid, String name,
-                                      String organizationUuid, Integer pageNo, Integer pageSize) {
+                                       String organizationUuid, Integer pageNo, Integer pageSize) {
         Page<User> userPage = new Page<>(pageNo, pageSize);
         PageVo<UserPageVo> result = new PageVo<>();
         List<String> userUuidList = Lists.newArrayList();
         SignInTask signInTask = getTaskByUuid(uuid);
         String userUuidsJson = signInTask.getUserUuids();
-        if (StringUtils.hasText(userUuidsJson)){
-            userUuidList = JSONObject.parseArray(userUuidsJson,String.class);
+        if (StringUtils.hasText(userUuidsJson)) {
+            userUuidList = JSONObject.parseArray(userUuidsJson, String.class);
         }
+        List<String> organizationVoList = new ArrayList<>();
+        organizationVoList.add(organizationUuid);
+
+        //子机构所有uuid
         LambdaQueryWrapper<User> qw = new LambdaQueryWrapper<User>()
-                .like(StringUtils.hasText(name),User::getName,name)
-                .like(StringUtils.hasText(organizationUuid),User::getOrganizationUuid,organizationUuid)
+                .like(StringUtils.hasText(name), User::getName, name)
                 .orderByDesc(User::getCreateTime);
-
-        if (CollectionUtils.isEmpty(userUuidList)){
-            return result;
-        }else {
-            qw.in(User::getUuid,userUuidList);
+        if (StringUtils.hasText(organizationUuid)) {
+            organizationVoList.addAll(SignTasks.checkHttpResponse(baseServiceRemote.listTeacherOrganizationsByParentUuid(organizationUuid)).stream().map(OrganizationVo::getUuid).collect(Collectors.toList()));
+            qw.in(User::getOrganizationUuid, organizationVoList);
         }
 
-        userService.page(userPage,qw);
-        BeanUtils.copyProperties(userPage,result);
+
+        if (CollectionUtils.isEmpty(userUuidList)) {
+            return result;
+        } else {
+            qw.in(User::getUuid, userUuidList);
+        }
+
+        userService.page(userPage, qw);
+        BeanUtils.copyProperties(userPage, result);
         List<UserPageVo> records = CzBeanUtils.copyListProperties(userPage.getRecords(), UserPageVo::new);
         result.setRecords(records);
         return result;
@@ -595,21 +603,20 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         Assert.notNull(signInTask, EResultCode.NullDataFail.getMessage());
         String uuidsJson = signInTask.getUserUuids();
         List<String> userUuidList = JSONObject.parseArray(uuidsJson, String.class);
-        userUuidList = removeAll(userUuidList,userUuids);
+        userUuidList = removeAll(userUuidList, userUuids);
         //保存
         signInTask.setUserUuids(JSONObject.toJSONString(userUuidList));
         List<String> deviceUuids = new ArrayList<>();
-        if (StringUtils.hasText(signInTask.getDeviceUuids())){
+        if (StringUtils.hasText(signInTask.getDeviceUuids())) {
             deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids(), String.class);
         }
 
         if (updateById(signInTask)) {
-            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids,ReportEnum.DELETE);
+            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids, ReportEnum.DELETE);
             return true;
         }
         return false;
     }
-
 
 
     @Override
@@ -618,16 +625,16 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         Assert.notNull(signInTask, EResultCode.NullDataFail.getMessage());
         String uuidsJson = signInTask.getDeviceUuids();
         List<String> deviceUuidList = JSONObject.parseArray(uuidsJson, String.class);
-        deviceUuidList = removeAll(deviceUuidList,deviceUuids);
+        deviceUuidList = removeAll(deviceUuidList, deviceUuids);
         signInTask.setDeviceUuids(JSONObject.toJSONString(deviceUuidList));
         List<String> userUuids = new ArrayList<>();
 
-        if (StringUtils.hasText(signInTask.getUserUuids())){
+        if (StringUtils.hasText(signInTask.getUserUuids())) {
             userUuids = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
         }
 
         if (updateById(signInTask)) {
-            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids,ReportEnum.DELETE);
+            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids, ReportEnum.DELETE);
             return true;
         }
         return false;
@@ -735,12 +742,12 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     }
 
     @Override
-    public List<SignInTask> getTodayTasks(LocalDate date,String deviceUuid) {
+    public List<SignInTask> getTodayTasks(LocalDate date, String deviceUuid) {
         LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<SignInTask>();
         qw.le(SignInTask::getTaskStartDate, date)
                 .ge(SignInTask::getTaskEndDate, date)
                 .eq(SignInTask::getIsEnable, true)
-                .like(StringUtils.hasText(deviceUuid),SignInTask::getDeviceUuids,deviceUuid)
+                .like(StringUtils.hasText(deviceUuid), SignInTask::getDeviceUuids, deviceUuid)
                 .orderByAsc(SignInTask::getTaskStartTime)
                 .orderByAsc(SignInBase::getTaskEndTime);
 
@@ -770,8 +777,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
                             return true;
                         }
                         return false;
-                    }
-                    else {
+                    } else {
                         List<Integer> list = JSONObject.parseArray(signInTask.getWeek(), Integer.class);
                         List<LocalDate> periodDate = TimeUtil.getPeriodDate(signInTask.getTaskStartDate(), signInTask.getTaskEndDate());
 
@@ -790,7 +796,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     @Override
     public List<SignInTask> getManageTodayTasks(LocalDate date, String operatorUuid) {
-        List<SignInTask> sign = getTodayTasks(date,null);
+        List<SignInTask> sign = getTodayTasks(date, null);
         List<SignInTask> signInTasks = sign.stream().filter(signInTask -> {
             SignInTask task = getTaskByUuid(signInTask.getUuid());
             MoreConfig moreConfig = JSONObject.parseObject(task.getMoreConfig(), MoreConfig.class);
@@ -810,7 +816,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         qw.le(SignInTask::getTaskStartDate, date)
                 .ge(SignInTask::getTaskEndDate, date)
                 .eq(SignInTask::getIsEnable, true)
-                .like(SignInTask::getUserUuids,operatorUuid)
+                .like(SignInTask::getUserUuids, operatorUuid)
                 .orderByAsc(SignInTask::getTaskStartTime)
                 .orderByAsc(SignInBase::getTaskEndTime);
         return list(qw);

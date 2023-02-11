@@ -59,7 +59,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
         lambda.like(!StringUtils.isEmpty(name), SignInRecord::getUsername, name)
                 .eq(!StringUtils.isEmpty(taskUuid), SignInRecord::getSignTaskUuid, taskUuid)
                 .likeRight(StringUtils.hasText(areaCode), SignInRecord::getAreaCode, areaCode)
-                .eq(SignInRecord::getStatus,SignStatusEnum.SINGED);
+                .eq(SignInRecord::getStatus, SignStatusEnum.SINGED);
 
 
         if (Objects.nonNull(startDate) && Objects.nonNull(endDate)) {
@@ -101,7 +101,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
             arrayList.add(signInRecordPageVo);
         }
 
-        BeanUtils.copyProperties(signInRecordPage,result);
+        BeanUtils.copyProperties(signInRecordPage, result);
         result.setRecords(arrayList);
 
         return result;
@@ -110,17 +110,17 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
     @Override
     public Page<SignInRecord> getUserSignStatistics(Integer status, String name,
                                                     Integer pageNo, Integer pageSize, LocalDate startDate,
-                                                    LocalDate endDate, String taskUuid,String uuid) {
+                                                    LocalDate endDate, String taskUuid, String uuid) {
 
         Page<SignInRecord> result = new Page<>(pageNo, pageSize);
         LambdaQueryWrapper<SignInRecord> qw = new LambdaQueryWrapper<SignInRecord>()
-                .eq(StringUtils.hasText(uuid),SignInRecord::getSignStatisticsUuid,uuid)
+                .eq(StringUtils.hasText(uuid), SignInRecord::getSignStatisticsUuid, uuid)
                 .like(StringUtils.hasText(name), SignInRecord::getUsername, name)
                 .eq(Objects.nonNull(status), SignInRecord::getStatus, status)
                 .eq(StringUtils.hasText(taskUuid), SignInRecord::getSignTaskUuid, taskUuid)
-                .eq(SignInRecord::getIsEnable,true);
+                .eq(SignInRecord::getIsEnable, true);
 
-        if (startDate!=null && endDate!=null){
+        if (startDate != null && endDate != null) {
             qw.between(SignInRecord::getCreateTime,
                     LocalDateTime.of(startDate, LocalTime.MIN),
                     LocalDateTime.of(endDate, LocalTime.MAX));
@@ -144,7 +144,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
     public void deleteByTaskUuid(String taskUuid) {
 
         LambdaQueryWrapper<SignInRecord> eq = new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getSignTaskUuid, taskUuid);
-       remove(eq);
+        remove(eq);
     }
 
     @Override
@@ -160,9 +160,9 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
         Page<SignInRecord> page = new Page<>(pageNo, pageSize);
         LambdaQueryWrapper<SignInRecord> eq = new LambdaQueryWrapper<SignInRecord>()
                 .eq(SignInRecord::getSignStatisticsUuid, uuid)
-                .eq(Objects.nonNull(status),SignInRecord::getStatus, status)
-                .like(StringUtils.hasText(username),SignInRecord::getUsername, username);
-        page(page,eq);
+                .eq(Objects.nonNull(status), SignInRecord::getStatus, status)
+                .like(StringUtils.hasText(username), SignInRecord::getUsername, username);
+        page(page, eq);
         return page;
     }
 
@@ -174,13 +174,13 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
     }
 
     @Override
-    public SignInRecord getTaskByDateUuid(LocalDate date,LocalTime taskStartTime, LocalTime taskEndTime,
-                                                String taskUuid,String uuid) {
+    public SignInRecord getTaskByDateUuid(LocalDate date, LocalTime taskStartTime, LocalTime taskEndTime,
+                                          String taskUuid, String uuid) {
         LambdaQueryWrapper<SignInRecord> qw = new LambdaQueryWrapper<>();
-        qw.eq(SignInRecord::getSignTaskUuid,taskUuid)
-                .between(SignInRecord::getCreateTime,LocalDateTime.of(date,taskStartTime),LocalDateTime.of(date,
+        qw.eq(SignInRecord::getSignTaskUuid, taskUuid)
+                .between(SignInRecord::getCreateTime, LocalDateTime.of(date, taskStartTime), LocalDateTime.of(date,
                         taskEndTime))
-                .eq(SignInRecord::getUserUuid,uuid)
+                .eq(SignInRecord::getUserUuid, uuid)
                 .last("limit 0,1");
         return getOne(qw);
     }
@@ -188,7 +188,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
     @Override
     public void updateByUuid(SignInRecord record) {
         LambdaUpdateWrapper<SignInRecord> eq = new LambdaUpdateWrapper<SignInRecord>().eq(SignInRecord::getUuid, record.getUuid());
-        update(record,eq);
+        update(record, eq);
     }
 
     @Override

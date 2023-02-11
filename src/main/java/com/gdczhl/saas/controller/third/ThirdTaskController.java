@@ -2,8 +2,6 @@ package com.gdczhl.saas.controller.third;
 
 import com.alibaba.fastjson.JSONObject;
 import com.gdczhl.saas.entity.*;
-import com.gdczhl.saas.netty.CmdRequest;
-import com.gdczhl.saas.netty.NettyCmd;
 import com.gdczhl.saas.pojo.MoreConfig;
 import com.gdczhl.saas.pojo.vo.ReportTaskVo;
 import com.gdczhl.saas.pojo.vo.SignInInfoVo;
@@ -37,18 +35,18 @@ public class ThirdTaskController {
     @GetMapping("todayTasks")
     @ApiOperation("当天任务计划发布")
     public ResponseVo<List<ReportTaskVo>> todayTasks(@ApiParam("日期") @RequestParam @DateTimeFormat(pattern = "yyyy-MM" +
-            "-dd") LocalDate date, @ApiParam("设备uuid") String deviceUuid ) {
-        List<SignInTask> signInTasks = thirdTaskService.todayTasks(date,deviceUuid);
+            "-dd") LocalDate date, @ApiParam("设备uuid") String deviceUuid) {
+        List<SignInTask> signInTasks = thirdTaskService.todayTasks(date, deviceUuid);
 
         List<ReportTaskVo> list = signInTasks.stream().filter(signInTask -> {
-            return StringUtils.hasText(signInTask.getDeviceUuids())&&StringUtils.hasText(signInTask.getUserUuids());
+            return StringUtils.hasText(signInTask.getDeviceUuids()) && StringUtils.hasText(signInTask.getUserUuids());
         }).map(signInTask -> {
             ReportTaskVo reportTaskVo = new ReportTaskVo();
             BeanUtils.copyProperties(signInTask, reportTaskVo);
             MoreConfig moreConfigs = JSONObject.parseObject(signInTask.getMoreConfig(), MoreConfig.class);
             if (moreConfigs != null && moreConfigs.getAutoRun()) {
                 reportTaskVo.setPop(true);
-            }else {
+            } else {
                 reportTaskVo.setPop(false);
             }
             return reportTaskVo;
@@ -88,12 +86,12 @@ public class ThirdTaskController {
 
     @GetMapping("signInInfo")
     @ApiOperation("人员签到信息")
-    public ResponseVo<SignInInfoVo> signInInfo(@ApiParam("机构uuid")String institutionUuid,
-                                                     @ApiParam("当前时间") @DateTimeFormat(pattern = "yyyy-MM-dd " +
-                                                             "HH:mm:ss") LocalDateTime time,
-                                                     @ApiParam("机构uuid")String deviceUuid) {
+    public ResponseVo<SignInInfoVo> signInInfo(@ApiParam("机构uuid") String institutionUuid,
+                                               @ApiParam("当前时间") @DateTimeFormat(pattern = "yyyy-MM-dd " +
+                                                       "HH:mm:ss") LocalDateTime time,
+                                               @ApiParam("机构uuid") String deviceUuid) {
 
-        return ResponseVo.success(thirdTaskService.signInInfo(institutionUuid,time,deviceUuid));
+        return ResponseVo.success(thirdTaskService.signInInfo(institutionUuid, time, deviceUuid));
     }
 
 }

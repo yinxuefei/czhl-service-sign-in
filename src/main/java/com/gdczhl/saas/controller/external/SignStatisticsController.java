@@ -89,7 +89,7 @@ public class SignStatisticsController {
             return vo;
         }).collect(Collectors.toList());
 
-        BeanUtils.copyProperties(pageBo,result);
+        BeanUtils.copyProperties(pageBo, result);
         result.setRecords(recordVos);
         return ResponseVo.success(result);
     }
@@ -114,10 +114,10 @@ public class SignStatisticsController {
                                                                                   "20") Integer pageSize,
                                                                           @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                                                           @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                                                          @ApiParam("任务uuid")  String taskUuid
+                                                                          @ApiParam("任务uuid") String taskUuid
     ) {
-        Page<SignInRecord> signInRecordList =  signInRecordService.getUserSignStatistics(status, name, pageNo,
-                pageSize, startDate, endDate, taskUuid,uuid);
+        Page<SignInRecord> signInRecordList = signInRecordService.getUserSignStatistics(status, name, pageNo,
+                pageSize, startDate, endDate, taskUuid, uuid);
 
         List<SignInRecord> records = signInRecordList.getRecords();
         PageVo<UserSignStatisticsVo> result = new PageVo<>();
@@ -131,13 +131,13 @@ public class SignStatisticsController {
             vo.setCreateDate(signInRecord.getCreateTime().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy.MM" +
                     ".dd")));
             vo.setCreateTime("");
-            if (signInRecord.getStatus().equals(SignStatusEnum.SINGED)){
+            if (signInRecord.getStatus().equals(SignStatusEnum.SINGED)) {
                 vo.setCreateTime(signInRecord.getUpdateTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
             }
             vo.setStatus(signInRecord.getStatus().getCode());
             return vo;
         }).collect(Collectors.toList());
-        BeanUtils.copyProperties(signInRecordList,result);
+        BeanUtils.copyProperties(signInRecordList, result);
         result.setRecords(recordVos);
         return ResponseVo.success(result);
     }

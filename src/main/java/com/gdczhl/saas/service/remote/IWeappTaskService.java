@@ -22,9 +22,9 @@ import java.util.List;
  */
 public interface IWeappTaskService {
 
-    List<SignTaskStatusVo> weekSignTask(LocalDate startDate, LocalDate endDate,String userUuid);
+    List<SignTaskStatusVo> weekSignTask(LocalDate startDate, LocalDate endDate, String userUuid);
 
-    List<DayTaskVo> daySignTask(LocalDate date,String operatorUuid);
+    List<DayTaskVo> daySignTask(LocalDate date, String operatorUuid);
 
     PageVo<RecordPageVo> StatisticsPage(LocalDate date, String taskUuid, Integer status, Integer pageNo, Integer pageSize, String username);
 }

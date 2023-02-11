@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "czhl-service-wechat", path = "/wechat/feign/officialAccount")
 public interface WechatRemoteService {
 
-    /**获取公众号
+    /**
+     * 获取公众号
+     *
      * @return
      */
     @GetMapping("get")
@@ -32,6 +34,7 @@ public interface WechatRemoteService {
 
     /**
      * 批量发送
+     *
      * @param officialAccountSendVo
      * @return
      */

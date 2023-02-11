@@ -57,7 +57,7 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
 
     @Override
     public PageVo<SignStatisticsPageBo> pageBo(LocalDate startDate, LocalDate endDate, String uuid, Integer pageNo,
-                                             Integer pageSize) {
+                                               Integer pageSize) {
 
         Page<SignStatistics> page = new Page<>(pageNo, pageSize);
 
@@ -78,7 +78,7 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
             return signStatisticsPageBo;
         }).collect(Collectors.toList());
 
-        BeanUtils.copyProperties(page, result,"records");
+        BeanUtils.copyProperties(page, result, "records");
         result.setRecords(records);
         return result;
     }
@@ -97,8 +97,8 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
 
 
         qw.eq(SignStatistics::getIsEnable, true)
-          .eq(SignStatistics::getInstitutionUuid,
-                  ContextCache.getInstitutionUuid());
+                .eq(SignStatistics::getInstitutionUuid,
+                        ContextCache.getInstitutionUuid());
     }
 
     @Override
@@ -125,8 +125,9 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
         Integer signed = 0;
 
         for (SignStatistics signStatistics : list) {
-            if (StringUtils.hasText(signStatistics.getAllUser())){
-            set.addAll(JSONObject.parseArray(signStatistics.getAllUser(),String.class));}
+            if (StringUtils.hasText(signStatistics.getAllUser())) {
+                set.addAll(JSONObject.parseArray(signStatistics.getAllUser(), String.class));
+            }
             allSign += parseJsonToList(signStatistics.getAllUser()).size();
             resign += parseJsonToList(signStatistics.getReUser()).size();
             notSign += (parseJsonToList(signStatistics.getNotUser()).size() - parseJsonToList(signStatistics.getAskLeaveUser()).size());
@@ -162,17 +163,17 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
     }
 
     @Override
-    public SignStatistics getStatisticsByTaskUuid(String taskUuid,LocalDate date) {
+    public SignStatistics getStatisticsByTaskUuid(String taskUuid, LocalDate date) {
         LambdaQueryWrapper<SignStatistics> qw = new LambdaQueryWrapper<>();
         qw.eq(SignStatistics::getTaskUuid, taskUuid)
-                .eq(SignStatistics::getCreateDate,date);
+                .eq(SignStatistics::getCreateDate, date);
         return getOne(qw);
     }
 
     @Override
     public void updateByUuid(SignStatistics statistics) {
         LambdaQueryWrapper<SignStatistics> eq = new LambdaQueryWrapper<SignStatistics>().eq(SignStatistics::getUuid, statistics.getUuid());
-        update(statistics,eq);
+        update(statistics, eq);
     }
 
     private static List<String> parseJsonToList(String json) {

@@ -42,4 +42,7 @@ public interface BaseServiceRemote {
     ResponseVo<InstitutionVo> get(@RequestParam(value = "uuid") String uuid);
 
 
+    @GetMapping("organization/listTeacherOrganizationsByParentUuid")
+    ResponseVo<List<OrganizationVo>> listTeacherOrganizationsByParentUuid(@RequestParam(value = "parentUuid") String parentUuid);
+
 }

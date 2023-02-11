@@ -35,7 +35,7 @@ public interface ISignInRecordService extends IService<SignInRecord> {
      */
     Page<SignInRecord> getUserSignStatistics(Integer status, String name, Integer pageNo,
                                              Integer pageSize, LocalDate startDate, LocalDate endDate,
-                                             String taskUuid,String uuid);
+                                             String taskUuid, String uuid);
 
 
     SignInRecord getByStatisticsUserUuid(String statisticsUuid, String userUuid);
@@ -51,8 +51,9 @@ public interface ISignInRecordService extends IService<SignInRecord> {
 
     SignInRecord getByUuid(String recordUuid);
 
-    SignInRecord getTaskByDateUuid(LocalDate date,LocalTime taskStartTime, LocalTime taskEndTime, String uuid,
-                                         String operatorUuid);
+    SignInRecord getTaskByDateUuid(LocalDate date, LocalTime taskStartTime, LocalTime taskEndTime, String uuid,
+                                   String operatorUuid);
+
     void updateByUuid(SignInRecord record);
 
     List<SignInRecord> getByStatisticsUuid(String statisticsUuid);

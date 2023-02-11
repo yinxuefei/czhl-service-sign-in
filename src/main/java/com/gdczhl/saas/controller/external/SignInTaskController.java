@@ -140,15 +140,16 @@ public class SignInTaskController {
         return signInTaskService.setUsers(taskUserVo.getUserUuids(), taskUserVo.getUuid()) ? ResponseVo.success("添加成功") :
                 ResponseVo.fail(EResultCode.InsertDataFail);
     }
+
     @GetMapping("userPage")
     @ApiOperation("获取人员分页")
-    public ResponseVo<PageVo<UserPageVo>> userPage(@ApiParam(name = "uuid", value = "任务uuid")String uuid,
+    public ResponseVo<PageVo<UserPageVo>> userPage(@ApiParam(name = "uuid", value = "任务uuid") String uuid,
                                                    @ApiParam(name = "pageNo", value = "当前页码") @RequestParam(required = false, defaultValue = "1") Integer pageNo,
-                                                   @ApiParam(name = "pageSize", value = "每页记录数") @RequestParam(required = false, defaultValue = "20")Integer pageSize,
+                                                   @ApiParam(name = "pageSize", value = "每页记录数") @RequestParam(required = false, defaultValue = "20") Integer pageSize,
                                                    @ApiParam("用户名") String name,
-                                                   @ApiParam("架构名称")String organizationUuid){
-        Assert.notNull(uuid,EResultCode.NullDataFail.getMessage());
-        PageVo<UserPageVo> pageVo = signInTaskService.pageUser(uuid,name,organizationUuid, pageNo, pageSize);
+                                                   @ApiParam("架构名称") String organizationUuid) {
+        Assert.notNull(uuid, EResultCode.NullDataFail.getMessage());
+        PageVo<UserPageVo> pageVo = signInTaskService.pageUser(uuid, name, organizationUuid, pageNo, pageSize);
         return ResponseVo.success(pageVo);
     }
 

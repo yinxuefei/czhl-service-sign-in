@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SignInVoBase  {
+public class SignInVoBase {
 
     //签到任务开始时间
     @ApiModelProperty("签到任务开始时间")

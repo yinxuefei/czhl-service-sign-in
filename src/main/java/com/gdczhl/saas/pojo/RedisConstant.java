@@ -15,7 +15,7 @@ public class RedisConstant {
     //String key = RECORD_KEY+signInTask.getUuid()+userUuid;
     public static final String RECORD_KEY = "sign:record_uuid:";
 
-    public static String getKey(String a ,String b){
-        return a+"_"+b;
+    public static String getKey(String a, String b) {
+        return a + "_" + b;
     }
 }

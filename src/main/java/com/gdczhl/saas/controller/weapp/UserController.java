@@ -61,20 +61,20 @@ public class UserController {
     @GetMapping("userInfo")
     @ApiOperation("当前用户名称")
     public ResponseVo<String> userInfo() {
-     return ResponseVo.success(userService.getByUserUuid(ContextCache.getOperatorUuid()).getName());
+        return ResponseVo.success(userService.getByUserUuid(ContextCache.getOperatorUuid()).getName());
     }
 
     @GetMapping("isManager")
     @ApiOperation("是否为任务负责人")
-    public ResponseVo<Boolean> isManager(){
+    public ResponseVo<Boolean> isManager() {
         //当前用户Uuid
         String userUuid = ContextCache.getOperatorUuid();
         List<SignInTask> signInTasks = signInTaskService.list();
         for (SignInTask signInTask : signInTasks) {
             MoreConfig moreConfig = JSONObject.parseObject(signInTask.getMoreConfig(), MoreConfig.class);
-            if (moreConfig.getManager()!=null && moreConfig.getManager().getIsManager()){
+            if (moreConfig.getManager() != null && moreConfig.getManager().getIsManager()) {
                 List<String> managerUuids = moreConfig.getManager().getManagerUuids();
-                if (!CollectionUtils.isEmpty(managerUuids) && managerUuids.contains(userUuid)){
+                if (!CollectionUtils.isEmpty(managerUuids) && managerUuids.contains(userUuid)) {
                     return ResponseVo.success(true);
                 }
             }
@@ -85,60 +85,60 @@ public class UserController {
     @GetMapping("userSignTask")
     @ApiOperation("我的签到")
     public ResponseVo<List<UserTaskVo>> userSignTask(@ApiParam("日期 yyyy-MM-dd") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date
-    ,String userUuid) {
+            , String userUuid) {
         //获取当前用户 某天内所有签到 按开始时间正序排序
-        if (StringUtils.isBlank(userUuid)){
+        if (StringUtils.isBlank(userUuid)) {
             userUuid = ContextCache.getOperatorUuid();
         }
 
-       List<SignInTask> todayTasks = signInTaskService.getUserTodayTasks(date, userUuid);
+        List<SignInTask> todayTasks = signInTaskService.getUserTodayTasks(date, userUuid);
 
         ArrayList<UserTaskVo> result = new ArrayList<>();
         for (SignInTask todayTask : todayTasks) {
             UserTaskVo vo = new UserTaskVo();
-            CzBeanUtils.copyProperties(todayTask,vo);
+            CzBeanUtils.copyProperties(todayTask, vo);
             vo.setUserUuid(userUuid);
-            LocalDateTime startTime = LocalDateTime.of(date,todayTask.getTaskStartTime());
-            LocalDateTime endTime =  LocalDateTime.of(date,todayTask.getTaskEndTime());
+            LocalDateTime startTime = LocalDateTime.of(date, todayTask.getTaskStartTime());
+            LocalDateTime endTime = LocalDateTime.of(date, todayTask.getTaskEndTime());
             LocalDateTime now = LocalDateTime.now();
 
             SignInRecord record = signInRecordService.getTaskByDateUuid(date, todayTask.getTaskStartTime(), todayTask.getTaskEndTime(),
                     todayTask.getUuid(), userUuid);
 
-            if (now.isBefore(startTime)){
+            if (now.isBefore(startTime)) {
                 vo.setTaskStatus(TaskStatusEnum.NOT_STARTED.getCode());
                 result.add(vo);
                 continue;
             }
 
-            if (now.isAfter(startTime)&&now.isBefore(endTime)){
+            if (now.isAfter(startTime) && now.isBefore(endTime)) {
                 //进行中
                 vo.setTaskStatus(TaskStatusEnum.UNDERWAY.getCode());
-                if (record==null){
+                if (record == null) {
                     vo.setSignStatus(SignStatusEnum.NOT_SING.getCode());
                     continue;
                 }
                 vo.setSignStatus(record.getStatus().getCode());
-                BeanUtils.copyProperties(record,vo);
-                if (Objects.nonNull(record.getUpdateTime())){
-                vo.setSignTime(record.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                BeanUtils.copyProperties(record, vo);
+                if (Objects.nonNull(record.getUpdateTime())) {
+                    vo.setSignTime(record.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 }
                 vo.setPicture(record.getSignImageUrl());
                 result.add(vo);
                 continue;
             }
-                //已结束
-                vo.setTaskStatus(TaskStatusEnum.STOP.getCode());
-                if (record==null){
+            //已结束
+            vo.setTaskStatus(TaskStatusEnum.STOP.getCode());
+            if (record == null) {
                 vo.setSignStatus(SignStatusEnum.NOT_SING.getCode());
                 result.add(vo);
                 continue;
-                 }
-                vo.setSignStatus(record.getStatus().getCode());
-                BeanUtils.copyProperties(record,vo);
-                vo.setSignTime(record.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                vo.setPicture(record.getSignImageUrl());
-                result.add(vo);
+            }
+            vo.setSignStatus(record.getStatus().getCode());
+            BeanUtils.copyProperties(record, vo);
+            vo.setSignTime(record.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            vo.setPicture(record.getSignImageUrl());
+            result.add(vo);
         }
         return ResponseVo.success(result);
     }

@@ -40,12 +40,12 @@ public class TaskController {
     @GetMapping("weekSignTask")
     @ApiOperation("签到状态")
     public ResponseVo<List<SignTaskStatusVo>> weekSignTask(@ApiParam("开始日期") @DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam LocalDate startDate,
-                                                     @ApiParam("结束日期 yyyy-MM-dd") @DateTimeFormat(pattern = "yyyy-MM" +
-                                                             "-dd") @RequestParam LocalDate endDate,String userUuid) {
-        if (StringUtils.isBlank(userUuid)){
+                                                           @ApiParam("结束日期 yyyy-MM-dd") @DateTimeFormat(pattern = "yyyy-MM" +
+                                                                   "-dd") @RequestParam LocalDate endDate, String userUuid) {
+        if (StringUtils.isBlank(userUuid)) {
             userUuid = ContextCache.getOperatorUuid();
         }
-        return ResponseVo.success(weappTaskService.weekSignTask(startDate, endDate,userUuid));
+        return ResponseVo.success(weappTaskService.weekSignTask(startDate, endDate, userUuid));
     }
 
 
@@ -53,10 +53,9 @@ public class TaskController {
     @ApiOperation("当前用户为负责人可查看的任务")
     public ResponseVo<List<DayTaskVo>> daySignTask(@ApiParam("日期 yyyy-MM-dd") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         String operatorUuid = ContextCache.getOperatorUuid();
-        List<DayTaskVo> dayTaskVos = weappTaskService.daySignTask(date,operatorUuid);
+        List<DayTaskVo> dayTaskVos = weappTaskService.daySignTask(date, operatorUuid);
         return ResponseVo.success(dayTaskVos);
     }
-
 
 
     @GetMapping("StatisticsPage")
@@ -68,7 +67,7 @@ public class TaskController {
                                                            @ApiParam("pageNo") @RequestParam(defaultValue = "1") Integer pageNo,
                                                            @ApiParam("pageSize") @RequestParam(defaultValue = "20") Integer pageSize,
                                                            @ApiParam("用户名称") String username) {
-        return ResponseVo.success(weappTaskService.StatisticsPage(date, taskUuid,status,pageNo,pageSize,username));
+        return ResponseVo.success(weappTaskService.StatisticsPage(date, taskUuid, status, pageNo, pageSize, username));
     }
 
 

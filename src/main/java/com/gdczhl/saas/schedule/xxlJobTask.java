@@ -71,15 +71,15 @@ public class xxlJobTask {
         //时间过期 前一分钟统计
         for (SignInTask signInTask : signInTasks) {
 
-            if (LocalTime.now().isAfter(signInTask.getTaskStartTime())&&LocalTime.now().isBefore(signInTask.getTaskEndTime())){
+            if (LocalTime.now().isAfter(signInTask.getTaskStartTime()) && LocalTime.now().isBefore(signInTask.getTaskEndTime())) {
                 createTask(signInTask);
             }
 
             //结束任务在之前一分钟,统计
-            if (LocalTime.now().isAfter(signInTask.getTaskEndTime().plusMinutes(1))){
-                String statisticsKey = RedisConstant.STATISTICS_UUID_KEY+signInTask.getUuid();
+            if (LocalTime.now().isAfter(signInTask.getTaskEndTime().plusMinutes(1))) {
+                String statisticsKey = RedisConstant.STATISTICS_UUID_KEY + signInTask.getUuid();
                 String statisticsJson = stringRedisTemplate.opsForValue().get(statisticsKey);
-                if (statisticsJson==null){
+                if (statisticsJson == null) {
                     //漏创建的
                     createTask(signInTask);
                     continue;
@@ -87,10 +87,10 @@ public class xxlJobTask {
                 String[] split = statisticsJson.split("&&");
                 String statisticsUuid = split[0];
                 stringRedisTemplate.opsForValue().set(
-                        statisticsKey, statisticsUuid+"&&1", JuheUtil.getDistanceTomorrowSeconds(now),
+                        statisticsKey, statisticsUuid + "&&1", JuheUtil.getDistanceTomorrowSeconds(now),
                         TimeUnit.SECONDS);
                 //统计打卡信息
-                if (split[1].equals("1")){
+                if (split[1].equals("1")) {
                     //已统计
                     continue;
                 }
@@ -98,10 +98,10 @@ public class xxlJobTask {
                 HashSet<String> alreadyUser = new HashSet<>();
                 HashSet<String> notUser = new HashSet<>();
                 for (SignInRecord record : signInRecordList) {
-                    if (record.getStatus().equals(SignStatusEnum.NOT_SING)){
+                    if (record.getStatus().equals(SignStatusEnum.NOT_SING)) {
                         notUser.add(record.getUserUuid());
                     }
-                    if (record.getStatus().equals(SignStatusEnum.RESIGN)){
+                    if (record.getStatus().equals(SignStatusEnum.RESIGN)) {
                         alreadyUser.add(record.getUserUuid());
                     }
                     record.setIsEnable(true);
@@ -113,15 +113,15 @@ public class xxlJobTask {
                 statistics.setIsEnable(true);
 
                 //有更多设置
-                if (StringUtils.hasText(signInTask.getMoreConfig())){
+                if (StringUtils.hasText(signInTask.getMoreConfig())) {
                     MoreConfig moreConfig = JSONObject.parseObject(signInTask.getMoreConfig(), MoreConfig.class);
                     //有推送人
-                    if (moreConfig.getReportPush().getIsReportPush()){
+                    if (moreConfig.getReportPush().getIsReportPush()) {
                         OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
                         List<String> userUuids = moreConfig.getReportPush().getPusherUuids();
                         //已绑公众号
-                        if (officialAccountVo.isBandMiniapp()){
-                            sendWechatReport(signInTask,statistics,now,officialAccountVo,userUuids);
+                        if (officialAccountVo.isBandMiniapp()) {
+                            sendWechatReport(signInTask, statistics, now, officialAccountVo, userUuids);
                         }
                     }
                 }
@@ -134,7 +134,7 @@ public class xxlJobTask {
     }
 
     private void sendWechatReport(SignInTask signInTask, SignStatistics statistics, LocalDate now,
-                                  OfficialAccountVo officialAccountVo,List<String> userUuids) {
+                                  OfficialAccountVo officialAccountVo, List<String> userUuids) {
         List<String> allUsers = parseJsonToList(statistics.getAllUser());
         List<String> alreadyUsers = parseJsonToList(statistics.getAlreadyUser());
         List<String> notUsers = parseJsonToList(statistics.getNotUser());
@@ -145,7 +145,7 @@ public class xxlJobTask {
         OfficialAccountSendVo.ParamsBean paramsBean = new OfficialAccountSendVo.ParamsBean();
         paramsBean.setFirst(String.format("您好,【%s】已结束,详情情况如下", signInTask.getName()));
         paramsBean.setKeyword1(now.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")));
-        paramsBean.setKeyword2(String.format("应签: %s人,已完成: %s人,未完成: %s人", allUsers.size(),alreadyUsers.size(),
+        paramsBean.setKeyword2(String.format("应签: %s人,已完成: %s人,未完成: %s人", allUsers.size(), alreadyUsers.size(),
                 notUsers.size()));
         paramsBean.setRemark("祝您工作顺利");
         sendVo.setParams(paramsBean);
@@ -157,10 +157,10 @@ public class xxlJobTask {
         //获取所有启用,并合法的项目(未设置用户,未设置设备)
         //模拟小程序端获取数据
         LambdaQueryWrapper<SignInTask> signs = new LambdaQueryWrapper<>();
-        signs.eq(SignInTask::getStatus,true);
+        signs.eq(SignInTask::getStatus, true);
         List<SignInTask> signInTasks = signInTaskService.list(signs);
         for (SignInTask signInTask : signInTasks) {
-            if (signInTask.getTaskStartDate().isAfter(LocalDate.now())&&signInTask.getTaskEndDate().isBefore(LocalDate.now())){
+            if (signInTask.getTaskStartDate().isAfter(LocalDate.now()) && signInTask.getTaskEndDate().isBefore(LocalDate.now())) {
                 signInTask.setStatus(false);
                 signInTask.setIsEnable(false);
                 signInTaskService.updateById(signInTask);
@@ -170,11 +170,10 @@ public class xxlJobTask {
     }
 
 
-
     public void createTask(SignInTask signInTask) {
         //获取所有启用,并合法的项目(未设置用户,未设置设备)
         //模拟小程序端获取数据
-        thirdTaskService.getSignStatisticsUUid(signInTask,LocalDate.now());
+        thirdTaskService.getSignStatisticsUUid(signInTask, LocalDate.now());
     }
 
     private static List<String> parseJsonToList(String json) {
