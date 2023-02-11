@@ -61,7 +61,7 @@ public class xxlJobTask {
     @Autowired
     private IUserService userService;
 
-    @Value("")
+    @Value("wechat.templateType")
     private String templateType;
 
     @XxlJob("statisticsTask")
