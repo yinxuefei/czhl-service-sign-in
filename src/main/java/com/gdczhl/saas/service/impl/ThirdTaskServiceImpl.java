@@ -13,6 +13,7 @@ import com.gdczhl.saas.pojo.vo.signInTask.DeviceSignVo;
 import com.gdczhl.saas.service.*;
 import com.gdczhl.saas.utils.*;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -225,6 +226,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         OfficialAccountSendVo sendVo = new OfficialAccountSendVo();
         sendVo.setOfficialAccountUuid(officialAccountVo.getUuid());
         sendVo.setTemplateType(templateType);
+        sendVo.setUserUuids(Arrays.asList(user.getUuid()));
         OfficialAccountSendVo.ParamsBean paramsBean = new OfficialAccountSendVo.ParamsBean();
         paramsBean.setFirst(String.format("您好,【%s】已成功签到",signInTask.getName()));
         paramsBean.setKeyword1(device.getAreaAddress());

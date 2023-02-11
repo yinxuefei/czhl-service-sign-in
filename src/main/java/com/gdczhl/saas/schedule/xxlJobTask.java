@@ -118,9 +118,10 @@ public class xxlJobTask {
                     //有推送人
                     if (moreConfig.getReportPush().getIsReportPush()){
                         OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+                        List<String> userUuids = moreConfig.getReportPush().getPusherUuids();
                         //已绑公众号
                         if (officialAccountVo.isBandMiniapp()){
-                            sendWechatReport(signInTask,statistics,now,officialAccountVo);
+                            sendWechatReport(signInTask,statistics,now,officialAccountVo,userUuids);
                         }
                     }
                 }
@@ -132,14 +133,15 @@ public class xxlJobTask {
         }
     }
 
-    private void sendWechatReport(SignInTask signInTask, SignStatistics statistics, LocalDate now, OfficialAccountVo officialAccountVo) {
+    private void sendWechatReport(SignInTask signInTask, SignStatistics statistics, LocalDate now,
+                                  OfficialAccountVo officialAccountVo,List<String> userUuids) {
         List<String> allUsers = parseJsonToList(statistics.getAllUser());
         List<String> alreadyUsers = parseJsonToList(statistics.getAlreadyUser());
         List<String> notUsers = parseJsonToList(statistics.getNotUser());
-
         OfficialAccountSendVo sendVo = new OfficialAccountSendVo();
         sendVo.setOfficialAccountUuid(officialAccountVo.getUuid());
         sendVo.setTemplateType(templateType);
+        sendVo.setUserUuids(userUuids);
         OfficialAccountSendVo.ParamsBean paramsBean = new OfficialAccountSendVo.ParamsBean();
         paramsBean.setFirst(String.format("您好,【%s】已结束,详情情况如下", signInTask.getName()));
         paramsBean.setKeyword1(now.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")));
