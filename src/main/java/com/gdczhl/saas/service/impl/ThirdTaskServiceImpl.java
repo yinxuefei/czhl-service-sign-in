@@ -193,13 +193,13 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
 
 
 
-//        if (signInTask.getPush()) {
-//            OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
-//            if (officialAccountVo.isBandMiniapp()){
-//                sendWechat(user, device, officialAccountVo);
-//                record.setPush(true);
-//            }
-//        }
+        if (signInTask.getPush()) {
+            OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+            if (officialAccountVo.isBandMiniapp()){
+                sendWechat(signInTask,user, device, officialAccountVo);
+                record.setPush(true);
+            }
+        }
 
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
@@ -219,13 +219,14 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
 
     }
 
-    private void sendWechat(User user, Device device, OfficialAccountVo officialAccountVo) {
+    //个人推送
+    private void sendWechat(SignInTask signInTask, User user, Device device, OfficialAccountVo officialAccountVo) {
 
         OfficialAccountSendVo sendVo = new OfficialAccountSendVo();
         sendVo.setOfficialAccountUuid(officialAccountVo.getUuid());
         sendVo.setTemplateType(templateType);
         OfficialAccountSendVo.ParamsBean paramsBean = new OfficialAccountSendVo.ParamsBean();
-        paramsBean.setFirst("你已成功签到");
+        paramsBean.setFirst(String.format("您好,【%s】已成功签到",signInTask.getName()));
         paramsBean.setKeyword1(device.getAreaAddress());
         paramsBean.setKeyword2(user.getName());
         paramsBean.setKeyword3(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm")));
@@ -233,6 +234,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         sendVo.setParams(paramsBean);
         wechatRemoteService.sendListByUser(sendVo);
     }
+
+
 
     private SignInRecord getRecordUuid(String uuid, String userUuid) {
         String recordUuid = stringRedisTemplate.opsForValue().get(RedisConstant.RECORD_KEY + uuid + userUuid);

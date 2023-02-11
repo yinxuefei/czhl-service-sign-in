@@ -105,7 +105,7 @@ public class UserController {
                     todayTask.getUuid(), userUuid);
 
             if (now.isBefore(startTime)){
-                vo.setTaskStatus(1);
+                vo.setTaskStatus(0);
                 result.add(vo);
                 continue;
             }
