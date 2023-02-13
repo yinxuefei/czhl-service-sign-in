@@ -18,4 +18,12 @@ public enum BodyStatusEnum {
     private final Integer code;
 
     private final String description;
+
+
+    public BodyStatusEnum Check_temperature(Double temperature) {
+        if (temperature==null){
+            return BodyStatusEnum.NULL;
+        }
+        return temperature>=37.3?BodyStatusEnum.FEVER:BodyStatusEnum.NORMAL;
+    }
 }

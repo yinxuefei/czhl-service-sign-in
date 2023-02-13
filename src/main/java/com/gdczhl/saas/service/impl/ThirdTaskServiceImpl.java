@@ -3,6 +3,7 @@ package com.gdczhl.saas.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.gdczhl.saas.entity.*;
+import com.gdczhl.saas.pojo.MoreConfig;
 import com.gdczhl.saas.pojo.RedisConstant;
 import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.service.remote.WechatRemoteService;
@@ -191,14 +192,22 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
-
+        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+        //个人推送
         if (signInTask.getPush()) {
-            OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
             if (officialAccountVo.isBandMiniapp()) {
                 sendWechat(signInTask, user, device, officialAccountVo);
                 record.setPush(true);
             }
         }
+
+        if (signInTask.getPush()) {
+            if (officialAccountVo.isBandMiniapp()) {
+                sendWechat(signInTask, user, device, officialAccountVo);
+                record.setPush(true);
+            }
+        }
+
 
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
@@ -217,6 +226,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                 record.getUuid()));
 
     }
+
 
     //个人推送
     private void sendWechat(SignInTask signInTask, User user, Device device, OfficialAccountVo officialAccountVo) {

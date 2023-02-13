@@ -150,7 +150,9 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
     @Override
     public List<SignInRecord> getListByStatisticsUuid(String signStatisticsUuid) {
         LambdaQueryWrapper<SignInRecord> eq = new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getSignStatisticsUuid,
-                signStatisticsUuid);
+                signStatisticsUuid)
+                .orderByDesc(SignInRecord::getUpdateTime)
+                .orderByDesc(SignInRecord::getCreateTime);
         return list(eq);
     }
 
