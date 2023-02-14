@@ -266,8 +266,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @NotNull
     private SignStatistics SignStatisticsInIt(SignInTask signInTask, LocalDate now, String key) {
         SignStatistics signStatistics = new SignStatistics();
-        BeanUtils.copyProperties(signInTask, signStatistics, "uuid", "id", "version", "createTime", "updateTime,creator," +
-                "editor,delete");
+        BeanUtils.copyProperties(signInTask, signStatistics,"uuid", "id", "version", "createTime", "updateTime",
+                "creator", "editor","delete");
         signStatistics.setTaskUuid(signInTask.getUuid());
         signStatistics.setCreateDate(now);
         signStatistics.setIsEnable(false);
@@ -288,7 +288,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             String key = RedisConstant.RECORD_KEY + signInTask.getUuid() + userUuid;
             SignInRecord record = new SignInRecord();
             BeanUtils.copyProperties(signInTask, record, "uuid", "id", "version", "createTime", "updateTime",
-                    "creator", "editor,delete");
+                    "creator", "editor","delete");
             record.setSignTaskUuid(signInTask.getUuid());
             record.setSignStatisticsUuid(signStatistics.getUuid());
             User user = userService.getByUserUuid(userUuid);
