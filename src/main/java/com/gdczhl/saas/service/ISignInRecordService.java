@@ -1,7 +1,7 @@
 package com.gdczhl.saas.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.gdczhl.saas.pojo.vo.signInRecord.SignInRecordPageVo;
+import com.gdczhl.saas.controller.external.vo.record.SignInRecordPageVo;
 import com.gdczhl.saas.entity.SignInRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gdczhl.saas.vo.PageVo;

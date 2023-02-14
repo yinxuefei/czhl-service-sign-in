@@ -2,10 +2,10 @@ package com.gdczhl.saas.controller.third;
 
 import com.alibaba.fastjson.JSONObject;
 import com.gdczhl.saas.entity.*;
-import com.gdczhl.saas.pojo.MoreConfig;
-import com.gdczhl.saas.pojo.vo.ReportTaskVo;
-import com.gdczhl.saas.pojo.vo.SignInInfoVo;
-import com.gdczhl.saas.pojo.vo.signInTask.DeviceSignVo;
+import com.gdczhl.saas.controller.external.vo.task.more.MoreConfig;
+import com.gdczhl.saas.controller.third.vo.ReportTaskVo;
+import com.gdczhl.saas.controller.third.vo.SignInInfoVo;
+import com.gdczhl.saas.controller.third.vo.DeviceSignVo;
 import com.gdczhl.saas.service.*;
 import com.gdczhl.saas.vo.ResponseVo;
 import io.swagger.annotations.Api;

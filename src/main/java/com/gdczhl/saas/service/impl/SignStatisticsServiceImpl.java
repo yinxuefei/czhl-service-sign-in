@@ -3,13 +3,10 @@ package com.gdczhl.saas.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.gdczhl.saas.controller.weapp.bo.vo.RecordPageVo;
-import com.gdczhl.saas.controller.weapp.bo.vo.SignTaskStatusVo;
 import com.gdczhl.saas.entity.*;
-import com.gdczhl.saas.enums.BodyStatusEnum;
-import com.gdczhl.saas.pojo.MoreConfig;
-import com.gdczhl.saas.pojo.bo.signInStatistics.SignStatisticsPageBo;
-import com.gdczhl.saas.pojo.bo.signInStatistics.UserStatisticsCountBo;
+import com.gdczhl.saas.controller.external.vo.task.more.MoreConfig;
+import com.gdczhl.saas.service.bo.statistics.SignStatisticsPageBo;
+import com.gdczhl.saas.service.bo.statistics.UserStatisticsCountBo;
 import com.gdczhl.saas.utils.ContextCache;
 import com.gdczhl.saas.mapper.SignStatisticsMapper;
 import com.gdczhl.saas.service.ISignInRecordService;
@@ -27,9 +24,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 

@@ -1,15 +1,14 @@
 package com.gdczhl.saas.controller.external;
 
+import com.gdczhl.saas.controller.external.vo.task.*;
 import com.gdczhl.saas.enums.PollingModeEnum;
-import com.gdczhl.saas.pojo.DatePeriod;
-import com.gdczhl.saas.pojo.bo.signInTask.*;
-import com.gdczhl.saas.pojo.TimePeriod;
-import com.gdczhl.saas.pojo.vo.DevicePageVo;
-import com.gdczhl.saas.pojo.vo.UserPageVo;
-import com.gdczhl.saas.pojo.vo.signInTask.*;
+import com.gdczhl.saas.controller.external.vo.task.more.DatePeriod;
+import com.gdczhl.saas.controller.external.vo.task.more.TimePeriod;
 import com.gdczhl.saas.enums.EResultCode;
-import com.gdczhl.saas.pojo.vo.signInTask.TaskNameVo;
+import com.gdczhl.saas.controller.external.vo.task.TaskNameVo;
 import com.gdczhl.saas.service.ISignInTaskService;
+import com.gdczhl.saas.service.bo.task.SignInTaskSaveBo;
+import com.gdczhl.saas.service.bo.task.SignInTaskUpdateBo;
 import com.gdczhl.saas.utils.CzBeanUtils;
 import com.gdczhl.saas.vo.PageVo;
 import com.gdczhl.saas.vo.ResponseVo;

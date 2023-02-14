@@ -3,18 +3,16 @@ package com.gdczhl.saas.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.gdczhl.saas.entity.*;
-import com.gdczhl.saas.pojo.MoreConfig;
-import com.gdczhl.saas.pojo.RedisConstant;
+import com.gdczhl.saas.constant.RedisConstant;
 import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.service.remote.WechatRemoteService;
 import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountSendVo;
 import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountVo;
-import com.gdczhl.saas.pojo.vo.SignInInfoVo;
-import com.gdczhl.saas.pojo.vo.signInTask.DeviceSignVo;
+import com.gdczhl.saas.controller.third.vo.SignInInfoVo;
+import com.gdczhl.saas.controller.third.vo.DeviceSignVo;
 import com.gdczhl.saas.service.*;
 import com.gdczhl.saas.utils.*;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -266,8 +264,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @NotNull
     private SignStatistics SignStatisticsInIt(SignInTask signInTask, LocalDate now, String key) {
         SignStatistics signStatistics = new SignStatistics();
-        BeanUtils.copyProperties(signInTask, signStatistics,"uuid", "id", "version", "createTime", "updateTime",
-                "creator", "editor","delete");
+        BeanUtils.copyProperties(signInTask, signStatistics, "uuid", "id", "version", "createTime", "updateTime",
+                "creator", "editor", "delete");
         signStatistics.setTaskUuid(signInTask.getUuid());
         signStatistics.setCreateDate(now);
         signStatistics.setIsEnable(false);
@@ -288,7 +286,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             String key = RedisConstant.RECORD_KEY + signInTask.getUuid() + userUuid;
             SignInRecord record = new SignInRecord();
             BeanUtils.copyProperties(signInTask, record, "uuid", "id", "version", "createTime", "updateTime",
-                    "creator", "editor","delete");
+                    "creator", "editor", "delete");
             record.setSignTaskUuid(signInTask.getUuid());
             record.setSignStatisticsUuid(signStatistics.getUuid());
             User user = userService.getByUserUuid(userUuid);

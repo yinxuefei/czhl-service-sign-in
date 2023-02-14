@@ -1,19 +1,15 @@
 package com.gdczhl.saas.controller.weapp;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.gdczhl.saas.controller.weapp.bo.vo.RecordPageVo;
-import com.gdczhl.saas.controller.weapp.bo.vo.UserTaskVo;
+import com.gdczhl.saas.controller.weapp.vo.user.UserTaskVo;
 import com.gdczhl.saas.entity.SignInRecord;
 import com.gdczhl.saas.entity.SignInTask;
-import com.gdczhl.saas.entity.User;
 import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.enums.TaskStatusEnum;
-import com.gdczhl.saas.pojo.MoreConfig;
-import com.gdczhl.saas.pojo.RedisConstant;
+import com.gdczhl.saas.controller.external.vo.task.more.MoreConfig;
+import com.gdczhl.saas.constant.RedisConstant;
 import com.gdczhl.saas.service.ISignInRecordService;
 import com.gdczhl.saas.service.ISignInTaskService;
-import com.gdczhl.saas.service.ISignStatisticsService;
 import com.gdczhl.saas.service.IUserService;
 import com.gdczhl.saas.utils.ContextCache;
 import com.gdczhl.saas.utils.CzBeanUtils;
@@ -34,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;

@@ -3,8 +3,7 @@ package com.gdczhl.saas.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.gdczhl.saas.enums.SignInModeEnum;
-import com.gdczhl.saas.pojo.vo.signInRecord.SignInRecordPageVo;
+import com.gdczhl.saas.controller.external.vo.record.SignInRecordPageVo;
 import com.gdczhl.saas.entity.BaseEntity;
 import com.gdczhl.saas.entity.SignInRecord;
 import com.gdczhl.saas.entity.SignInTask;
@@ -150,7 +149,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
     @Override
     public List<SignInRecord> getListByStatisticsUuid(String signStatisticsUuid) {
         LambdaQueryWrapper<SignInRecord> eq = new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getSignStatisticsUuid,
-                signStatisticsUuid)
+                        signStatisticsUuid)
                 .orderByDesc(SignInRecord::getUpdateTime)
                 .orderByDesc(SignInRecord::getCreateTime);
         return list(eq);

@@ -1,9 +1,8 @@
 package com.gdczhl.saas.controller.weapp;
 
-import com.gdczhl.saas.controller.weapp.bo.vo.*;
-
-import com.gdczhl.saas.service.ISignStatisticsService;
-import com.gdczhl.saas.service.IThirdTaskService;
+import com.gdczhl.saas.controller.weapp.vo.task.DayTaskVo;
+import com.gdczhl.saas.controller.weapp.vo.task.RecordPageVo;
+import com.gdczhl.saas.controller.weapp.vo.task.SignTaskStatusVo;
 import com.gdczhl.saas.service.remote.IWeappTaskService;
 
 
@@ -15,10 +14,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

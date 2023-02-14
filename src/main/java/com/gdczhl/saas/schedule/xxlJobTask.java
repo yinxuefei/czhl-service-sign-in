@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.gdczhl.saas.bo.feign.institution.InstitutionVo;
 import com.gdczhl.saas.entity.*;
 import com.gdczhl.saas.enums.SignStatusEnum;
-import com.gdczhl.saas.pojo.MoreConfig;
-import com.gdczhl.saas.pojo.RedisConstant;
+import com.gdczhl.saas.controller.external.vo.task.more.MoreConfig;
+import com.gdczhl.saas.constant.RedisConstant;
 import com.gdczhl.saas.service.*;
 import com.gdczhl.saas.service.remote.BaseServiceRemote;
 import com.gdczhl.saas.service.remote.WechatRemoteService;
@@ -14,7 +14,6 @@ import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountSendVo;
 import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountVo;
 import com.gdczhl.saas.utils.JuheUtil;
 import com.gdczhl.saas.utils.SignTasks;
-import com.gdczhl.saas.vo.ResponseVo;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 @Slf4j
@@ -133,7 +130,7 @@ public class xxlJobTask {
                         //已绑公众号
                         if (officialAccountVo.isBandMiniapp()) {
                             //TODO:体温推送待开发
-                        sendWechatBodyTemperature(statistics,officialAccountVo,signInRecordList,pushUuids);
+                            sendWechatBodyTemperature(statistics, officialAccountVo, signInRecordList, pushUuids);
                         }
                     }
                 }
@@ -154,15 +151,15 @@ public class xxlJobTask {
 //        HashSet<String> nullUsers = new HashSet<>();
 
         for (SignInRecord signInRecord : signInRecordList) {
-            if (Objects.isNull(signInRecord.getBodyTemperature())){
+            if (Objects.isNull(signInRecord.getBodyTemperature())) {
 //                nullUsers.add(signInRecord.getUsername());
                 continue;
             }
-            if (signInRecord.getBodyTemperature()<=37.3){
+            if (signInRecord.getBodyTemperature() <= 37.3) {
                 users.add(signInRecord.getUsername());
                 continue;
             }
-            if (signInRecord.getBodyTemperature()>=37.3){
+            if (signInRecord.getBodyTemperature() >= 37.3) {
                 exceptionUsers.add(signInRecord.getUsername());
             }
         }
@@ -170,12 +167,12 @@ public class xxlJobTask {
         StringBuilder exceptionUserToString = new StringBuilder("");
 
         for (int i = 1; i <= exceptionUsers.size(); i++) {
-            exceptionUserToString.append(exceptionUsers.get(i-1));
-            if (i<=5) {
-                if (i!=exceptionUsers.size()){
+            exceptionUserToString.append(exceptionUsers.get(i - 1));
+            if (i <= 5) {
+                if (i != exceptionUsers.size()) {
                     exceptionUserToString.append("、");
                 }
-            }else {
+            } else {
                 exceptionUserToString.append("...");
                 break;
             }

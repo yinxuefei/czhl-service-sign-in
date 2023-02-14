@@ -1,8 +1,8 @@
 package com.gdczhl.saas.service;
 
 import com.gdczhl.saas.entity.SignInTask;
-import com.gdczhl.saas.pojo.vo.SignInInfoVo;
-import com.gdczhl.saas.pojo.vo.signInTask.DeviceSignVo;
+import com.gdczhl.saas.controller.third.vo.SignInInfoVo;
+import com.gdczhl.saas.controller.third.vo.DeviceSignVo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

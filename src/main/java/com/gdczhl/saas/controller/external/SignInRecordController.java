@@ -1,6 +1,6 @@
 package com.gdczhl.saas.controller.external;
 
-import com.gdczhl.saas.pojo.vo.signInRecord.SignInRecordPageVo;
+import com.gdczhl.saas.controller.external.vo.record.SignInRecordPageVo;
 import com.gdczhl.saas.service.ISignInRecordService;
 import com.gdczhl.saas.service.IUserService;
 import com.gdczhl.saas.vo.PageVo;

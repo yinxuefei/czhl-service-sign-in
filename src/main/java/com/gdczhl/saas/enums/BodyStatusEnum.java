@@ -21,9 +21,9 @@ public enum BodyStatusEnum {
 
 
     public BodyStatusEnum Check_temperature(Double temperature) {
-        if (temperature==null){
+        if (temperature == null) {
             return BodyStatusEnum.NULL;
         }
-        return temperature>=37.3?BodyStatusEnum.FEVER:BodyStatusEnum.NORMAL;
+        return temperature >= 37.3 ? BodyStatusEnum.FEVER : BodyStatusEnum.NORMAL;
     }
 }

@@ -4,11 +4,11 @@ package com.gdczhl.saas.controller.external;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gdczhl.saas.entity.SignInTask;
 import com.gdczhl.saas.enums.SignStatusEnum;
-import com.gdczhl.saas.pojo.bo.signInStatistics.SignStatisticsPageBo;
-import com.gdczhl.saas.pojo.bo.signInStatistics.UserStatisticsCountBo;
-import com.gdczhl.saas.pojo.vo.signInStatistics.SignStatisticsPageVo;
-import com.gdczhl.saas.pojo.vo.signInStatistics.UserSignStatisticsVo;
-import com.gdczhl.saas.pojo.vo.signInStatistics.UserStatisticsCountVo;
+import com.gdczhl.saas.service.bo.statistics.SignStatisticsPageBo;
+import com.gdczhl.saas.service.bo.statistics.UserStatisticsCountBo;
+import com.gdczhl.saas.controller.external.vo.statistics.SignStatisticsPageVo;
+import com.gdczhl.saas.controller.external.vo.statistics.UserSignStatisticsVo;
+import com.gdczhl.saas.controller.external.vo.statistics.UserStatisticsCountVo;
 import com.gdczhl.saas.entity.SignInRecord;
 import com.gdczhl.saas.service.ISignInRecordService;
 import com.gdczhl.saas.service.ISignInTaskService;
@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**

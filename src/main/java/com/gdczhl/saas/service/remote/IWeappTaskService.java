@@ -1,15 +1,11 @@
 package com.gdczhl.saas.service.remote;
 
-import com.gdczhl.saas.controller.weapp.bo.vo.DayTaskVo;
-import com.gdczhl.saas.controller.weapp.bo.vo.RecordPageVo;
-import com.gdczhl.saas.controller.weapp.bo.vo.SignTaskStatusVo;
-import com.gdczhl.saas.entity.SignInTask;
-import com.gdczhl.saas.pojo.vo.SignInInfoVo;
-import com.gdczhl.saas.pojo.vo.signInTask.DeviceSignVo;
+import com.gdczhl.saas.controller.weapp.vo.task.DayTaskVo;
+import com.gdczhl.saas.controller.weapp.vo.task.RecordPageVo;
+import com.gdczhl.saas.controller.weapp.vo.task.SignTaskStatusVo;
 import com.gdczhl.saas.vo.PageVo;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**

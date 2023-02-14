@@ -1,10 +1,7 @@
 package com.gdczhl.saas.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.gdczhl.saas.controller.weapp.bo.vo.RecordPageVo;
-import com.gdczhl.saas.controller.weapp.bo.vo.SignTaskStatusVo;
-import com.gdczhl.saas.pojo.bo.signInStatistics.SignStatisticsPageBo;
-import com.gdczhl.saas.pojo.bo.signInStatistics.UserStatisticsCountBo;
+import com.gdczhl.saas.service.bo.statistics.SignStatisticsPageBo;
+import com.gdczhl.saas.service.bo.statistics.UserStatisticsCountBo;
 import com.gdczhl.saas.entity.SignStatistics;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gdczhl.saas.vo.PageVo;

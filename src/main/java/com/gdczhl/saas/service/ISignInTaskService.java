@@ -1,15 +1,14 @@
 package com.gdczhl.saas.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.gdczhl.saas.pojo.bo.signInTask.SignInTaskSaveBo;
-import com.gdczhl.saas.pojo.bo.signInTask.SignInTaskUpdateBo;
-import com.gdczhl.saas.pojo.bo.signInTask.TaskUserPageVo;
-import com.gdczhl.saas.pojo.vo.DevicePageVo;
-import com.gdczhl.saas.pojo.vo.UserPageVo;
-import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskPageVo;
-import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskSaveVo;
-import com.gdczhl.saas.pojo.vo.signInTask.SignInTaskVo;
-import com.gdczhl.saas.pojo.vo.signInTask.TaskNameVo;
+import com.gdczhl.saas.service.bo.task.SignInTaskSaveBo;
+import com.gdczhl.saas.service.bo.task.SignInTaskUpdateBo;
+import com.gdczhl.saas.controller.external.vo.task.TaskUserPageVo;
+import com.gdczhl.saas.controller.external.vo.task.DevicePageVo;
+import com.gdczhl.saas.controller.external.vo.task.UserPageVo;
+import com.gdczhl.saas.controller.external.vo.task.SignInTaskPageVo;
+import com.gdczhl.saas.controller.external.vo.task.SignInTaskVo;
+import com.gdczhl.saas.controller.external.vo.task.TaskNameVo;
 import com.gdczhl.saas.entity.SignInTask;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gdczhl.saas.vo.PageVo;
