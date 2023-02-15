@@ -51,8 +51,17 @@ rocketmq:
   name-server: 192.168.20.251:19876
   producer:
     group: simple-producer-group
-#  consumer:
-#    group: simple-consumer-group
+
+
+netty:
+  code: 108
+  name: refreshPatrol
+  nettyKey: 0e764a18-f77c-4e5d-8f43-3878eb97c8c2
+  service:
+    url: http://192.168.20.251:9877
+
+
+
 
 
 

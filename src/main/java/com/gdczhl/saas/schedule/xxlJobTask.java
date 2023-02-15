@@ -54,7 +54,7 @@ public class xxlJobTask {
     private BaseServiceRemote baseServiceRemote;
 
 
-    @Value("wechat.templateType")
+    @Value("${wechat.templateType}")
     private String templateType;
 
     @XxlJob("statisticsTask")

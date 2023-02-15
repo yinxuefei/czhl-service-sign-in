@@ -63,11 +63,9 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @Autowired
     private IUserService userService;
 
-    @Value("wechat.templateType")
+    @Value("${wechat.templateType}")
     private String templateType;
 
-    @Value("wechat.templateId")
-    private String templateId;
 
     @Override
     public void deviceSignIn(DeviceSignVo deviceSignVo) {

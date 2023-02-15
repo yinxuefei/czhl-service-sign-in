@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gdczhl.saas.bo.feign.area.AreaBriefInfoVo;
+import com.gdczhl.saas.netty.CmdRequest;
+import com.gdczhl.saas.netty.NettyCmd;
+import com.gdczhl.saas.netty.remote.INettyServiceRemote;
 import com.gdczhl.saas.service.remote.AreaRemoteService;
 import com.gdczhl.saas.utils.ContextCache;
 import com.gdczhl.saas.interceptor.HeaderInterceptor;
@@ -38,6 +41,7 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +93,16 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private INettyServiceRemote nettyServiceRemote;
+
+    @Value("${netty.code}")
+    private Integer code;
+    @Value("${netty.name}")
+    private  String name;
+    @Value("${netty.nettyKey}")
+    private  String nettyKey;
+
 
     @Override
     public boolean add(SignInTaskSaveBo saveBo) {
@@ -123,20 +137,40 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         }
         isExpires(signInTask);
         return save(signInTask);
-
     }
 
     private static String getInstitutionUuid() {
         return ContextCache.getAttribute(HeaderInterceptor.INSTITUTION_UUID).toString();
     }
 
+
+    private void sendToDevice(List<String> deviceUuids, List<String> userUuids) {
+        if (CollectionUtils.isEmpty(userUuids) || CollectionUtils.isEmpty(deviceUuids)){
+            return;
+        }
+     // 2.需要执行的任务通过netty发送给班牌
+        CmdRequest cmdRequest = new CmdRequest();
+        cmdRequest.setCmd(NettyCmd.REPORT.toCmd());
+        List<String> devices = new ArrayList<>(deviceUuids);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code",code);
+        jsonObject.put("name",name);
+        jsonObject.put("nettyKey",nettyKey);
+        cmdRequest.setTargets(devices);
+        cmdRequest.setCmd(jsonObject.toJSONString());
+        //3.发送
+        nettyServiceRemote.cmd(cmdRequest);
+    }
+
     private static void isExpires(SignInTask signInTask) {
         //未失效
-        if (signInTask.getTaskStartDate().isAfter(LocalDate.now()) && signInTask.getTaskEndDate().isBefore(LocalDate.now())){
+        if (LocalDate.now().isAfter(signInTask.getTaskStartDate()) && LocalDate.now().isBefore(signInTask.getTaskEndDate())){
             signInTask.setIsEnable(TaskEnableStatusEnum.ENABLE);
+            signInTask.setStatus(true);
         }else {
             //未在生效范围内
             signInTask.setIsEnable(TaskEnableStatusEnum.AUTO_CLOSE);
+            signInTask.setStatus(false);
         }
     }
 
@@ -186,6 +220,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (updateById(signInTask)) {
             //任务,允许人脸签到
             addOrDeleteFaceReport(deviceUuids, userUuids, ReportEnum.ADD);
+            sendToDevice(deviceUuids,userUuids);
             return true;
         } else {
             return false;
@@ -235,6 +270,8 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(deviceUuids, userUuids, ReportEnum.ADD);
+            //通知班牌更新
+            sendToDevice(deviceUuids,userUuids);
             return true;
         }
         return false;
@@ -327,8 +364,22 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
                 saveUser(moreConfig.getBodyTemperature().getPushUuids());
             }
         }
-
-        return updateByUuid(signInTask);
+        if (updateByUuid(signInTask)){
+            SignInTask task = getTaskByUuid(signInTask.getUuid());
+            List<String> deviceUuids = new ArrayList<>();
+            //查设备
+            if (StringUtils.hasText(task.getDeviceUuids())) {
+                deviceUuids = JSONObject.parseArray(task.getDeviceUuids()).toJavaList(String.class);
+            }
+            List<String> userUuids = new ArrayList<>();
+            if (StringUtils.hasText(task.getUserUuids())) {
+                userUuids.addAll(JSONObject.parseArray(task.getUserUuids(), String.class));
+            }
+            sendToDevice(deviceUuids,userUuids);
+            return true;
+        }
+        //通知班牌更新
+        return false;
     }
 
     private Boolean updateByUuid(SignInTask signInTask) {
@@ -371,8 +422,22 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         } else {
             task.setIsEnable(TaskEnableStatusEnum.CLOSE);
         }
-        return updateById(task);
+        if (updateById(task)){
+            List<String> deviceUuids = new ArrayList<>();
+            //查设备
+            if (StringUtils.hasText(task.getDeviceUuids())) {
+                deviceUuids = JSONObject.parseArray(task.getDeviceUuids()).toJavaList(String.class);
+            }
+            List<String> userUuids = new ArrayList<>();
+            if (StringUtils.hasText(task.getUserUuids())) {
+                userUuids.addAll(JSONObject.parseArray(task.getUserUuids(), String.class));
+            }
+            sendToDevice(deviceUuids,userUuids);
+            return true;
+        }
+        return false;
     }
+
 
     @Override
     public SignInTaskVo getTaskVoByUuid(String uuid) {
@@ -567,6 +632,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(userUuids, deviceUuids, ReportEnum.DELETE);
+            sendToDevice(deviceUuids,userUuids);
             return true;
         }
         return false;
@@ -589,6 +655,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(userUuids, deviceUuids, ReportEnum.DELETE);
+            sendToDevice(deviceUuids,userUuids);
             return true;
         }
         return false;
@@ -640,6 +707,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (StringUtils.hasText(deviceJson)){
             deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
         addOrDeleteFaceReport(userUuidList, deviceUuidList, ReportEnum.DELETE);
+        sendToDevice(deviceUuidList,userUuidList);
         signInTask.setUserUuids("[]");
         return updateById(signInTask);
     }
@@ -657,6 +725,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (StringUtils.hasText(deviceJson)){
             deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
         addOrDeleteFaceReport(userUuidList, deviceUuidList, ReportEnum.DELETE);
+        sendToDevice(deviceUuidList,userUuidList);
         signInTask.setDeviceUuids("[]");
         return updateById(signInTask);
     }

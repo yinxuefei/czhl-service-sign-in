@@ -51,22 +51,12 @@ public class ThirdTaskController {
             }
             return reportTaskVo;
         }).collect(Collectors.toList());
-
-
-        //2.需要执行的任务通过netty发送给班牌
-//        CmdRequest cmdRequest = new CmdRequest();
-//        cmdRequest.setCmd(NettyCmd.REPORT.toCmd());
-//        cmdRequest.setTargets(taskVoList);
-//        //3.发送
-//        nettyServiceRemote.cmd(cmdRequest);
-
         return ResponseVo.success(list);
     }
 
     @PostMapping("deviceSignIn")
     @ApiOperation("班牌签到")
     public ResponseVo<String> deviceSignIn(@RequestBody DeviceSignVo deviceSignVo) {
-
         thirdTaskService.deviceSignIn(deviceSignVo);
         return ResponseVo.success();
     }
