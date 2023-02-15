@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.gdczhl.saas.enums.PollingModeEnum;
 import com.gdczhl.saas.enums.SignInModeEnum;
+import com.gdczhl.saas.enums.TaskEnableStatusEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -65,7 +66,7 @@ public class SignInTask extends SignInBase {
     private String deviceSns;
 
     //开启
-    private Boolean isEnable;
+    private TaskEnableStatusEnum isEnable;
 
     //更多设置
     private String moreConfig;

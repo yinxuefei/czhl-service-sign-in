@@ -6,6 +6,7 @@ import com.gdczhl.saas.controller.external.vo.task.more.DatePeriod;
 import com.gdczhl.saas.controller.external.vo.task.more.TimePeriod;
 import com.gdczhl.saas.enums.EResultCode;
 import com.gdczhl.saas.controller.external.vo.task.TaskNameVo;
+import com.gdczhl.saas.enums.TaskEnableStatusEnum;
 import com.gdczhl.saas.service.ISignInTaskService;
 import com.gdczhl.saas.service.bo.task.SignInTaskSaveBo;
 import com.gdczhl.saas.service.bo.task.SignInTaskUpdateBo;
@@ -61,7 +62,7 @@ public class SignInTaskController {
         TimePeriod timePeriod = saveVo.getTimePeriod();
         BeanUtils.copyProperties(datePeriod, saveBo);
         BeanUtils.copyProperties(timePeriod, saveBo);
-        saveBo.setIsEnable(saveBo.getTaskStartDate().isAfter(LocalDate.now()) && saveBo.getTaskEndDate().isBefore(LocalDate.now()));
+
         return signInTaskService.add(saveBo) ? ResponseVo.success("添加成功") : ResponseVo.fail(EResultCode.InsertDataFail);
     }
 

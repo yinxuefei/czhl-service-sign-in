@@ -55,7 +55,7 @@ public class SignInTaskSaveBo {
     private MoreConfig moreConfig;
 
     //状态:启用/禁用
-    private Boolean isEnable;
+    private Integer isEnable;
 
     //机构uuid
     private String institutionUuid;

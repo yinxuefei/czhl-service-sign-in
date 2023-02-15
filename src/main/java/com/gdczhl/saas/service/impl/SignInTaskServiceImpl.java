@@ -121,9 +121,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
                 saveUser(pusherUuids);
             }
         }
-
-        signInTask.setStatus(!isExpires(signInTask));
-
+        isExpires(signInTask);
         return save(signInTask);
 
     }
@@ -132,60 +130,15 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         return ContextCache.getAttribute(HeaderInterceptor.INSTITUTION_UUID).toString();
     }
 
-    private static Boolean isExpires(SignInTask signInTask) {
+    private static void isExpires(SignInTask signInTask) {
         //未失效
-        return !LocalDate.now().isAfter(signInTask.getTaskStartDate()) || !LocalDate.now().isBefore(signInTask.getTaskEndDate());
+        if (signInTask.getTaskStartDate().isAfter(LocalDate.now()) && signInTask.getTaskEndDate().isBefore(LocalDate.now())){
+            signInTask.setIsEnable(TaskEnableStatusEnum.ENABLE);
+        }else {
+            //未在生效范围内
+            signInTask.setIsEnable(TaskEnableStatusEnum.AUTO_CLOSE);
+        }
     }
-
-//    private void saveSignStatisticsTask(SignInTask signInTask) {
-//        PollingModeEnum pollingMode = signInTask.getPollingMode();
-//        List<String> weekDays = JSONObject.parseArray(signInTask.getWeek(), String.class);
-//        Boolean filterFestival = signInTask.getFilterFestival();
-//        LocalDate taskStartDate = signInTask.getTaskStartDate();
-//        LocalDate taskEndDate = signInTask.getTaskEndDate();
-//        ArrayList<LocalDate> dateList = Lists.newArrayList();
-//        if (pollingMode.equals(PollingModeEnum.DAY)){
-//            for (String weekDay : weekDays) {
-//                LocalDate date = LocalDate.parse(weekDay, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-//                if (filterFestival){
-//                    JuheBean vacation = JuheUtil.getVacation(stringRedisTemplate, date);
-//                    if (vacation != null && vacation.getResult().getStatus().equals(JuheDayStatusEnum.FESTIVAL.getCode())){
-//                        dateList.add(date);
-//                    }
-//                }else {
-//                    dateList.add(date);
-//                }
-//            }
-//        }
-//
-//        if (pollingMode.equals(PollingModeEnum.WEEK)){
-//            List<Integer> weeks = weekDays.stream().map(s -> Integer.valueOf(s)).collect(Collectors.toList());
-//            List<LocalDate> dates = TimeUtil.getPeriodDate(taskStartDate,taskEndDate);
-//            for (LocalDate date : dates) {
-//                if (weeks.contains(date.getDayOfWeek().getValue())){
-//                    if (filterFestival){
-//                        JuheBean vacation = JuheUtil.getVacation(stringRedisTemplate, date);
-//                    if (vacation != null && vacation.getResult().getStatus().equals(JuheDayStatusEnum.FESTIVAL.getCode())){
-//                        dateList.add(date);
-//                        }
-//                    }else {
-//                        dateList.add(date);
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//        for (LocalDate localDate : dateList) {
-//            SignStatistics signStatistics = new SignStatistics();
-//            BeanUtils.copyProperties(signInTask,signStatistics);
-//            signStatistics.setTaskName(SignTasks.getTaskNameResult(signInTask));
-//            signStatistics.setAllUser(signInTask.getUserUuids());
-//            signStatistics.setCreateDate(localDate);
-//            signStatisticsService.save(signStatistics);
-//        }
-//
-//    }
 
 
     public List<TaskNameVo> getTaskNameList(Integer status) {
@@ -400,6 +353,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
                 .eq(Objects.nonNull(taskStatus), SignInTask::getStatus, taskStatus)
                 .eq(SignInTask::getInstitutionUuid, getInstitutionUuid())
                 .orderByDesc(SignInTask::getStatus)
+                .orderByDesc(SignInTask::getTaskEndDate)
                 .orderByDesc(SignInTask::getTaskStartDate);
 
 
@@ -414,7 +368,11 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             throw new IllegalArgumentException("任务已被删除");
         }
         task.setStatus(enable);
-        task.setIsEnable(enable);
+        if (enable) {
+            task.setIsEnable(TaskEnableStatusEnum.ENABLE);
+        } else {
+            task.setIsEnable(TaskEnableStatusEnum.CLOSE);
+        }
         return updateById(task);
     }
 
@@ -440,7 +398,6 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         } else {
             result.setDateDays(JSONObject.parseArray(signInTask.getWeek(), String.class));
         }
-
         return result;
     }
 
@@ -494,6 +451,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
             signInTaskPageVo.setLastUpdateTime(signInTask.getUpdateTime() == null ? signInTask.getCreateTime().format(timeFormatter) : signInTask.getUpdateTime().format(timeFormatter));
             signInTaskPageVo.setStatus(signInTask.getStatus() ? 1 : 0);
+            signInTaskPageVo.setIsEnable(signInTask.getIsEnable().equals(TaskEnableStatusEnum.ENABLE));
             return signInTaskPageVo;
         }).collect(Collectors.toList());
 
@@ -673,16 +631,36 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     @Override
     public boolean deleteAllUser(String uuid) {
-        SignInTask task = getTaskByUuid(uuid);
-        task.setUserUuids("[]");
-        return updateById(task);
+        SignInTask signInTask = getTaskByUuid(uuid);
+        Assert.notNull(signInTask, EResultCode.NullDataFail.getMessage());
+        String uuidsJson = signInTask.getUserUuids();
+        String deviceJson = signInTask.getDeviceUuids();
+        List userUuidList = new ArrayList<>();
+        List deviceUuidList = new ArrayList<>();
+        if (StringUtils.hasText(uuidsJson)){
+            userUuidList = JSONObject.parseArray(uuidsJson, String.class);}
+        if (StringUtils.hasText(deviceJson)){
+            deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
+        addOrDeleteFaceReport(userUuidList, signInTask, deviceUuidList, ReportEnum.DELETE);
+        signInTask.setUserUuids("[]");
+        return updateById(signInTask);
     }
 
     @Override
     public boolean deleteAllDevice(String uuid) {
-        SignInTask task = getTaskByUuid(uuid);
-        task.setDeviceUuids("[]");
-        return updateById(task);
+        SignInTask signInTask = getTaskByUuid(uuid);
+        Assert.notNull(signInTask, EResultCode.NullDataFail.getMessage());
+        String uuidsJson = signInTask.getUserUuids();
+        String deviceJson = signInTask.getDeviceUuids();
+        List userUuidList = new ArrayList<>();
+        List deviceUuidList = new ArrayList<>();
+        if (StringUtils.hasText(uuidsJson)){
+            userUuidList = JSONObject.parseArray(uuidsJson, String.class);}
+        if (StringUtils.hasText(deviceJson)){
+            deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
+        addOrDeleteFaceReport(userUuidList, signInTask, deviceUuidList, ReportEnum.DELETE);
+        signInTask.setDeviceUuids("[]");
+        return updateById(signInTask);
     }
 
     private static String getPageSignInMode(SignInTask signInTask) {
@@ -744,7 +722,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<SignInTask>();
         qw.le(SignInTask::getTaskStartDate, date)
                 .ge(SignInTask::getTaskEndDate, date)
-                .eq(SignInTask::getIsEnable, true)
+                .eq(SignInTask::getIsEnable, TaskEnableStatusEnum.ENABLE)
                 .like(StringUtils.hasText(deviceUuid), SignInTask::getDeviceUuids, deviceUuid)
                 .orderByAsc(SignInTask::getTaskStartTime)
                 .orderByAsc(SignInBase::getTaskEndTime);
@@ -813,7 +791,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         LambdaQueryWrapper<SignInTask> qw = new LambdaQueryWrapper<>();
         qw.le(SignInTask::getTaskStartDate, date)
                 .ge(SignInTask::getTaskEndDate, date)
-                .eq(SignInTask::getIsEnable, true)
+                .eq(SignInTask::getIsEnable, TaskEnableStatusEnum.ENABLE)
                 .like(SignInTask::getUserUuids, operatorUuid)
                 .orderByAsc(SignInTask::getTaskStartTime)
                 .orderByAsc(SignInBase::getTaskEndTime);

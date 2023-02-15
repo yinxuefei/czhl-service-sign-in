@@ -7,6 +7,7 @@ import com.gdczhl.saas.entity.*;
 import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.controller.external.vo.task.more.MoreConfig;
 import com.gdczhl.saas.constant.RedisConstant;
+import com.gdczhl.saas.enums.TaskEnableStatusEnum;
 import com.gdczhl.saas.service.*;
 import com.gdczhl.saas.service.remote.BaseServiceRemote;
 import com.gdczhl.saas.service.remote.WechatRemoteService;
@@ -25,10 +26,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -218,12 +216,30 @@ public class xxlJobTask {
         //获取所有启用,并合法的项目(未设置用户,未设置设备)
         //模拟小程序端获取数据
         LambdaQueryWrapper<SignInTask> signs = new LambdaQueryWrapper<>();
-        signs.eq(SignInTask::getStatus, true);
+        signs.in(SignInTask::getIsEnable, Arrays.asList(TaskEnableStatusEnum.ENABLE,
+                TaskEnableStatusEnum.AUTO_CLOSE));
         List<SignInTask> signInTasks = signInTaskService.list(signs);
         for (SignInTask signInTask : signInTasks) {
-            if (signInTask.getTaskStartDate().isAfter(LocalDate.now()) && signInTask.getTaskEndDate().isBefore(LocalDate.now())) {
+            if (LocalDate.now().isAfter(signInTask.getTaskStartDate()) && LocalDate.now().isBefore(signInTask.getTaskEndDate()))  {
+                if (signInTask.getStatus()){
+                    continue;
+                }
+                signInTask.setStatus(true);
+                signInTask.setIsEnable(TaskEnableStatusEnum.ENABLE);
+                signInTaskService.updateById(signInTask);
+            }else if (signInTask.getTaskStartDate().isEqual(LocalDate.now())){
+                if (signInTask.getStatus()){
+                    continue;
+                }
+                signInTask.setStatus(true);
+                signInTask.setIsEnable(TaskEnableStatusEnum.ENABLE);
+                signInTaskService.updateById(signInTask);
+            }else {
+                if (!signInTask.getStatus()){
+                    continue;
+                }
                 signInTask.setStatus(false);
-                signInTask.setIsEnable(false);
+                signInTask.setIsEnable(TaskEnableStatusEnum.AUTO_CLOSE);
                 signInTaskService.updateById(signInTask);
             }
         }
