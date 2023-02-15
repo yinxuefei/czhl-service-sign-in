@@ -185,7 +185,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         if (updateById(signInTask)) {
             //任务,允许人脸签到
-            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids, ReportEnum.ADD);
+            addOrDeleteFaceReport(deviceUuids, userUuids, ReportEnum.ADD);
             return true;
         } else {
             return false;
@@ -234,19 +234,17 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         signInTask.setDeviceUuids(JSONObject.toJSONString(devUuids));
 
         if (updateById(signInTask)) {
-            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids, ReportEnum.ADD);
+            addOrDeleteFaceReport(deviceUuids, userUuids, ReportEnum.ADD);
             return true;
         }
         return false;
     }
 
-    private void addOrDeleteFaceReport(List<String> deviceUuids, SignInTask signInTask, List<String> userUuids,
+    private void addOrDeleteFaceReport(List<String> deviceUuids, List<String> userUuids,
                                        ReportEnum report) {
         if (!CollectionUtils.isEmpty(userUuids) && !CollectionUtils.isEmpty(deviceUuids)) {
-            if (JSONObject.parseArray(signInTask.getSignInMode(), Integer.class).contains(SignInModeEnum.FACE.getCode())) {
-                //下发人脸
-                syncProducer.addOrDeleteUserDeviceFlagSaveList(deviceUuids, userUuids, report.getCode());
-            }
+            //下发人脸
+            syncProducer.addOrDeleteUserDeviceFlagSaveList(deviceUuids, userUuids, report.getCode());
         }
     }
 
@@ -477,7 +475,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         }
 
         if (removeById(signInTask)) {
-            addOrDeleteFaceReport(deviceUuids, signInTask, userUuids, ReportEnum.DELETE);
+            addOrDeleteFaceReport(deviceUuids, userUuids, ReportEnum.DELETE);
             //删除统计
             signInRecordService.deleteByTaskUuid(signInTask.getUuid());
             return true;
@@ -568,7 +566,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         }
 
         if (updateById(signInTask)) {
-            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids, ReportEnum.DELETE);
+            addOrDeleteFaceReport(userUuids, deviceUuids, ReportEnum.DELETE);
             return true;
         }
         return false;
@@ -590,7 +588,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         }
 
         if (updateById(signInTask)) {
-            addOrDeleteFaceReport(userUuids, signInTask, deviceUuids, ReportEnum.DELETE);
+            addOrDeleteFaceReport(userUuids, deviceUuids, ReportEnum.DELETE);
             return true;
         }
         return false;
@@ -641,7 +639,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             userUuidList = JSONObject.parseArray(uuidsJson, String.class);}
         if (StringUtils.hasText(deviceJson)){
             deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
-        addOrDeleteFaceReport(userUuidList, signInTask, deviceUuidList, ReportEnum.DELETE);
+        addOrDeleteFaceReport(userUuidList, deviceUuidList, ReportEnum.DELETE);
         signInTask.setUserUuids("[]");
         return updateById(signInTask);
     }
@@ -658,7 +656,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             userUuidList = JSONObject.parseArray(uuidsJson, String.class);}
         if (StringUtils.hasText(deviceJson)){
             deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
-        addOrDeleteFaceReport(userUuidList, signInTask, deviceUuidList, ReportEnum.DELETE);
+        addOrDeleteFaceReport(userUuidList, deviceUuidList, ReportEnum.DELETE);
         signInTask.setDeviceUuids("[]");
         return updateById(signInTask);
     }
