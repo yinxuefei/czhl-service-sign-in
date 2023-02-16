@@ -13,5 +13,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IDeviceService extends IService<Device> {
 
+    /**
+     * 获取设备
+     * @param deviceUuid 设备uuid
+     * @return
+     */
     Device getByDeviceUuid(String deviceUuid);
 }

@@ -36,21 +36,25 @@ public class ThirdTaskController {
     @ApiOperation("当天任务计划发布")
     public ResponseVo<List<ReportTaskVo>> todayTasks(@ApiParam("日期") @RequestParam @DateTimeFormat(pattern = "yyyy-MM" +
             "-dd") LocalDate date, @ApiParam("设备uuid") String deviceUuid) {
+        //拿到包含此设备的今日任务
         List<SignInTask> signInTasks = thirdTaskService.todayTasks(date, deviceUuid);
 
+        //保留有效任务
         List<ReportTaskVo> list = signInTasks.stream().filter(signInTask -> {
-            return StringUtils.hasText(signInTask.getDeviceUuids()) && StringUtils.hasText(signInTask.getUserUuids());
-        }).map(signInTask -> {
-            ReportTaskVo reportTaskVo = new ReportTaskVo();
-            BeanUtils.copyProperties(signInTask, reportTaskVo);
-            MoreConfig moreConfigs = JSONObject.parseObject(signInTask.getMoreConfig(), MoreConfig.class);
-            if (moreConfigs != null && moreConfigs.getAutoRun()) {
-                reportTaskVo.setPop(true);
-            } else {
-                reportTaskVo.setPop(false);
-            }
-            return reportTaskVo;
-        }).collect(Collectors.toList());
+                    return StringUtils.hasText(signInTask.getDeviceUuids()) && StringUtils.hasText(signInTask.getUserUuids());
+                })
+                //是否需要自动弹出
+                .map(signInTask -> {
+                    ReportTaskVo reportTaskVo = new ReportTaskVo();
+                    BeanUtils.copyProperties(signInTask, reportTaskVo);
+                    MoreConfig moreConfigs = JSONObject.parseObject(signInTask.getMoreConfig(), MoreConfig.class);
+                    if (moreConfigs != null && moreConfigs.getAutoRun()) {
+                        reportTaskVo.setPop(true);
+                    } else {
+                        reportTaskVo.setPop(false);
+                    }
+                    return reportTaskVo;
+                }).collect(Collectors.toList());
         return ResponseVo.success(list);
     }
 

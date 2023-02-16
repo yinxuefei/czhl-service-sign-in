@@ -96,14 +96,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             List<String> userUuids = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
             if (userUuids.contains(userUuid)) {
                 //打卡
-                if (signIn(deviceSignVo, signInTask)) {
-                    //3.打卡成功,任务是否需要推送
-                    signInTask.getPush();
-//                    if (deviceSignVo.getBodyTemperature()>=37.3){
-                    //ToDO::差推送接口和模板
-                    // 推送给体温异常推送人 拥有userUuid
-//                    }
-                }
+                signIn(deviceSignVo, signInTask);
             }
         }
     }
@@ -197,14 +190,6 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
             }
         }
 
-        if (signInTask.getPush()) {
-            if (officialAccountVo.isBandMiniapp()) {
-                sendWechat(signInTask, user, device, officialAccountVo);
-                record.setPush(true);
-            }
-        }
-
-
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
         List<String> users = new ArrayList<>();
@@ -247,6 +232,12 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         return signInRecordService.getByUuid(recordUuid);
     }
 
+    /**
+     * 获取统计uuid
+     * @param signInTask
+     * @param now
+     * @return
+     */
     public String getSignStatisticsUUid(SignInTask signInTask, LocalDate now) {
         //key taskUuid  value StatisticsUuid
         String key = RedisConstant.STATISTICS_UUID_KEY + signInTask.getUuid();
@@ -259,6 +250,13 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         return statisticsUuidJson.split("&&")[0];
     }
 
+    /**
+     * 初始化统计表
+     * @param signInTask
+     * @param now
+     * @param key
+     * @return
+     */
     @NotNull
     private SignStatistics SignStatisticsInIt(SignInTask signInTask, LocalDate now, String key) {
         SignStatistics signStatistics = new SignStatistics();
@@ -278,6 +276,11 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         return signStatistics;
     }
 
+    /**
+     * 初始化流水记录
+     * @param signInTask
+     * @param signStatistics
+     */
     private void RecordInIt(SignInTask signInTask, SignStatistics signStatistics) {
         List<String> userUuids = JSONObject.parseArray(signInTask.getUserUuids(), String.class);
         for (String userUuid : userUuids) {

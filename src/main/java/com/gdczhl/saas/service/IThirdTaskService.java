@@ -18,11 +18,36 @@ import java.util.List;
  */
 public interface IThirdTaskService {
 
+
+    /**
+     *获取今日任务
+     * @param date
+     * @param deviceUuid
+     * @return
+     */
     List<SignInTask> todayTasks(LocalDate date, String deviceUuid);
 
+
+    /**
+     * 设备签到
+     * @param deviceSignVo
+     */
     void deviceSignIn(DeviceSignVo deviceSignVo);
 
+    /**
+     * 签到详情
+     * @param uuid
+     * @param time
+     * @param deviceUuid
+     * @return
+     */
     SignInInfoVo signInInfo(String uuid, LocalDateTime time, String deviceUuid);
 
+    /**
+     * 获取统计uuid
+     * @param signInTask
+     * @param now
+     * @return
+     */
     public String getSignStatisticsUUid(SignInTask signInTask, LocalDate now);
 }

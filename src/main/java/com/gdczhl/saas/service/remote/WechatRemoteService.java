@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface WechatRemoteService {
 
     /**
-     * 获取公众号
-     *
+     * 获取公众号信息
+     * @param institutionUuid 机构uuid
      * @return
      */
     @GetMapping("get")
@@ -34,8 +34,7 @@ public interface WechatRemoteService {
 
     /**
      * 批量发送
-     *
-     * @param officialAccountSendVo
+     * @param officialAccountSendVo 包含人员信息,模板信息,公众号信息
      * @return
      */
     @PostMapping("templateMessage/sendListByUser")

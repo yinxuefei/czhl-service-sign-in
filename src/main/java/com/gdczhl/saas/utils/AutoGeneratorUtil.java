@@ -17,6 +17,9 @@ import com.baomidou.mybatisplus.generator.config.StrategyConfig;
 import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 
+/**
+ * 三层架构自动生成工具
+ */
 public class AutoGeneratorUtil {
 
     public static void autoGenerator() {

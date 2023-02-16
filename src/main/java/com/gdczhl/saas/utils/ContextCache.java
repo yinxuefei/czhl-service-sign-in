@@ -15,7 +15,6 @@ public class ContextCache implements Serializable {
 
     /**
      * 放数据
-     *
      * @param sourceKey
      */
     public static final void putAttribute(String sourceKey, Object value) {
@@ -29,7 +28,6 @@ public class ContextCache implements Serializable {
 
     /**
      * 拿数据
-     *
      * @param sourceKey
      */
     public static final Object getAttribute(String sourceKey) {

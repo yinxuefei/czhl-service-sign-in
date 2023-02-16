@@ -18,6 +18,8 @@ import java.util.List;
 public interface AreaRemoteService {
 
     /**
+     * 获取场地详细信息
+     * @param uuid 场地uuid
      * @return
      */
     @GetMapping("findInfoByUuid")

@@ -60,17 +60,4 @@ public class JuheUtil {
         return result;
     }
 
-    public static long getDistanceTomorrowSeconds(LocalDateTime tomorrowTime) {
-        long result = (tomorrowTime.toEpochSecond(ZoneOffset.of("+8")) * 1000 - System.currentTimeMillis()) / 1000;
-        System.out.println(result);
-        return result;
-    }
-
-    public static void main(String[] args) {
-//        getDistanceTomorrowSeconds();
-//        Date date = new Date( );
-//        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
-//        System.out.println(df.format(date));
-    }
-
 }

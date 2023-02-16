@@ -16,8 +16,18 @@ import java.util.Map;
  */
 public interface IUserService extends IService<User> {
 
+    /**
+     * 获取用户
+     * @param uuid
+     * @return
+     */
     User getByUserUuid(String uuid);
 
+    /**
+     * 批量获取
+     * @param uuids
+     * @return key 用户uuid;  value 用户实体
+     */
     Map<String, User> getByUserUuids(List<String> uuids);
 
 }

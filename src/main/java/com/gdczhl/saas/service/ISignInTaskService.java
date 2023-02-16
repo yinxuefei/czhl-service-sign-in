@@ -162,27 +162,61 @@ public interface ISignInTaskService extends IService<SignInTask> {
     boolean deleteTaskUser(String uuid, List<String> userUuids);
 
     /**
-     * 删除设备
-     *
+     * 删除设备关联
      * @param uuid
      * @param devices
      * @return
      */
     boolean deleteDeviceUser(String uuid, List<String> devices);
 
+    @Deprecated
     Set<String> getOrganizationNameList();
 
+    @Deprecated
     Set<String> getAreaAddressNameList();
 
+    /**
+     * 清空用户
+     * @param uuid
+     * @return
+     */
     boolean deleteAllUser(String uuid);
-
+    /**
+     * 清空设备
+     * @param uuid
+     * @return
+     */
     boolean deleteAllDevice(String uuid);
 
+    /**
+     * 用户分页
+     * @param userUuids
+     * @return
+     */
     List<TaskUserPageVo> userPage(List<String> userUuids);
 
+    /**
+     * 获取今日任务
+     * 设备uuid非必传
+     * @param date 日期
+     * @param deviceUuid 设备uuid
+     * @return
+     */
     List<SignInTask> getTodayTasks(LocalDate date, String deviceUuid);
 
-    List<SignInTask> getManageTodayTasks(LocalDate date, String ManagerUuid);
+    /**
+     * 获取包含负责人在内的每日任务
+     * @param date
+     * @param managerUuid
+     * @return
+     */
+    List<SignInTask> getManageTodayTasks(LocalDate date, String managerUuid);
 
+    /**
+     * 获取包含推送人在内的每日任务
+     * @param date
+     * @param operatorUuid
+     * @return
+     */
     List<SignInTask> getUserTodayTasks(LocalDate date, String operatorUuid);
 }

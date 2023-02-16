@@ -15,15 +15,18 @@ public interface IotRemoteService {
 
     /**
      * 设备列表
-     *
      * @param searchVo
      * @return
      */
     @PostMapping("/device/pageByDeviceUuids")
     ResponseVo<PageVo<DeviceInfoVo>> pageByDeviceUuids(@RequestBody DeviceSearchVo searchVo);
 
-
+    /**
+     * 批量获取
+     * @param userUuidList
+     * @return
+     */
     @PostMapping("/device/getDeviceListByUuidList")
-    ResponseVo<List<DeviceInfoVo>> getDeviceListByUuidList(@RequestBody List<String> userUuidList);
+    ResponseVo<List<DeviceInfoVo>> getDeviceListByUuidList(@RequestBody List<String> devUuidList);
 
 }
