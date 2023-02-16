@@ -99,9 +99,9 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
     @Value("${netty.code}")
     private Integer code;
     @Value("${netty.name}")
-    private  String name;
+    private String name;
     @Value("${netty.nettyKey}")
-    private  String nettyKey;
+    private String nettyKey;
 
 
     @Override
@@ -145,17 +145,17 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
 
     private void sendToDevice(List<String> deviceUuids, List<String> userUuids) {
-        if (CollectionUtils.isEmpty(userUuids) || CollectionUtils.isEmpty(deviceUuids)){
+        if (CollectionUtils.isEmpty(userUuids) || CollectionUtils.isEmpty(deviceUuids)) {
             return;
         }
-     // 2.需要执行的任务通过netty发送给班牌
+        // 2.需要执行的任务通过netty发送给班牌
         CmdRequest cmdRequest = new CmdRequest();
         cmdRequest.setCmd(NettyCmd.REPORT.toCmd());
         List<String> devices = new ArrayList<>(deviceUuids);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code",code);
-        jsonObject.put("name",name);
-        jsonObject.put("nettyKey",nettyKey);
+        jsonObject.put("code", code);
+        jsonObject.put("name", name);
+        jsonObject.put("nettyKey", nettyKey);
         cmdRequest.setTargets(devices);
         cmdRequest.setCmd(jsonObject.toJSONString());
         //3.发送
@@ -164,10 +164,10 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     private static void isExpires(SignInTask signInTask) {
         //未失效
-        if (LocalDate.now().isAfter(signInTask.getTaskStartDate()) && LocalDate.now().isBefore(signInTask.getTaskEndDate())){
+        if (LocalDate.now().isAfter(signInTask.getTaskStartDate()) && LocalDate.now().isBefore(signInTask.getTaskEndDate())) {
             signInTask.setIsEnable(TaskEnableStatusEnum.ENABLE);
             signInTask.setStatus(true);
-        }else {
+        } else {
             //未在生效范围内
             signInTask.setIsEnable(TaskEnableStatusEnum.AUTO_CLOSE);
             signInTask.setStatus(false);
@@ -220,7 +220,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (updateById(signInTask)) {
             //任务,允许人脸签到
             addOrDeleteFaceReport(deviceUuids, userUuids, ReportEnum.ADD);
-            sendToDevice(deviceUuids,userUuids);
+            sendToDevice(deviceUuids, userUuids);
             return true;
         } else {
             return false;
@@ -271,7 +271,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(deviceUuids, userUuids, ReportEnum.ADD);
             //通知班牌更新
-            sendToDevice(deviceUuids,userUuids);
+            sendToDevice(deviceUuids, userUuids);
             return true;
         }
         return false;
@@ -364,7 +364,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
                 saveUser(moreConfig.getBodyTemperature().getPushUuids());
             }
         }
-        if (updateByUuid(signInTask)){
+        if (updateByUuid(signInTask)) {
             SignInTask task = getTaskByUuid(signInTask.getUuid());
             List<String> deviceUuids = new ArrayList<>();
             //查设备
@@ -375,7 +375,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             if (StringUtils.hasText(task.getUserUuids())) {
                 userUuids.addAll(JSONObject.parseArray(task.getUserUuids(), String.class));
             }
-            sendToDevice(deviceUuids,userUuids);
+            sendToDevice(deviceUuids, userUuids);
             return true;
         }
         //通知班牌更新
@@ -422,7 +422,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         } else {
             task.setIsEnable(TaskEnableStatusEnum.CLOSE);
         }
-        if (updateById(task)){
+        if (updateById(task)) {
             List<String> deviceUuids = new ArrayList<>();
             //查设备
             if (StringUtils.hasText(task.getDeviceUuids())) {
@@ -432,7 +432,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
             if (StringUtils.hasText(task.getUserUuids())) {
                 userUuids.addAll(JSONObject.parseArray(task.getUserUuids(), String.class));
             }
-            sendToDevice(deviceUuids,userUuids);
+            sendToDevice(deviceUuids, userUuids);
             return true;
         }
         return false;
@@ -632,7 +632,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(userUuids, deviceUuids, ReportEnum.DELETE);
-            sendToDevice(deviceUuids,userUuids);
+            sendToDevice(deviceUuids, userUuids);
             return true;
         }
         return false;
@@ -655,7 +655,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(userUuids, deviceUuids, ReportEnum.DELETE);
-            sendToDevice(deviceUuids,userUuids);
+            sendToDevice(deviceUuids, userUuids);
             return true;
         }
         return false;
@@ -702,12 +702,14 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         String deviceJson = signInTask.getDeviceUuids();
         List userUuidList = new ArrayList<>();
         List deviceUuidList = new ArrayList<>();
-        if (StringUtils.hasText(uuidsJson)){
-            userUuidList = JSONObject.parseArray(uuidsJson, String.class);}
-        if (StringUtils.hasText(deviceJson)){
-            deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
+        if (StringUtils.hasText(uuidsJson)) {
+            userUuidList = JSONObject.parseArray(uuidsJson, String.class);
+        }
+        if (StringUtils.hasText(deviceJson)) {
+            deviceUuidList = JSONObject.parseArray(deviceJson, String.class);
+        }
         addOrDeleteFaceReport(userUuidList, deviceUuidList, ReportEnum.DELETE);
-        sendToDevice(deviceUuidList,userUuidList);
+        sendToDevice(deviceUuidList, userUuidList);
         signInTask.setUserUuids("[]");
         return updateById(signInTask);
     }
@@ -720,12 +722,14 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         String deviceJson = signInTask.getDeviceUuids();
         List userUuidList = new ArrayList<>();
         List deviceUuidList = new ArrayList<>();
-        if (StringUtils.hasText(uuidsJson)){
-            userUuidList = JSONObject.parseArray(uuidsJson, String.class);}
-        if (StringUtils.hasText(deviceJson)){
-            deviceUuidList = JSONObject.parseArray(deviceJson, String.class);}
+        if (StringUtils.hasText(uuidsJson)) {
+            userUuidList = JSONObject.parseArray(uuidsJson, String.class);
+        }
+        if (StringUtils.hasText(deviceJson)) {
+            deviceUuidList = JSONObject.parseArray(deviceJson, String.class);
+        }
         addOrDeleteFaceReport(userUuidList, deviceUuidList, ReportEnum.DELETE);
-        sendToDevice(deviceUuidList,userUuidList);
+        sendToDevice(deviceUuidList, userUuidList);
         signInTask.setDeviceUuids("[]");
         return updateById(signInTask);
     }
@@ -822,15 +826,10 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
                         return false;
                     } else {
                         List<Integer> list = JSONObject.parseArray(signInTask.getWeek(), Integer.class);
-                        List<LocalDate> periodDate = TimeUtil.getPeriodDate(signInTask.getTaskStartDate(), signInTask.getTaskEndDate());
-
-                        for (LocalDate localDate : periodDate) {
-                            int week = localDate.getDayOfWeek().getValue();
-                            if (list.contains(week)) {
-                                //包含星期,保留
-                                return true;
-                            }
-                            return false;
+                        int week = date.getDayOfWeek().getValue();
+                        if (list.contains(week)) {
+                            //包含星期,保留
+                            return true;
                         }
                         return false;
                     }
