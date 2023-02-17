@@ -23,7 +23,7 @@ public interface IotRemoteService {
 
     /**
      * 批量获取
-     * @param userUuidList
+     * @param devUuidList
      * @return
      */
     @PostMapping("/device/getDeviceListByUuidList")

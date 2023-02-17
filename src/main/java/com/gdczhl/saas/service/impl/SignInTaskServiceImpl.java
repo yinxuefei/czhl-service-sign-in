@@ -631,7 +631,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         }
 
         if (updateById(signInTask)) {
-            addOrDeleteFaceReport(userUuids, deviceUuids, ReportEnum.DELETE);
+            addOrDeleteFaceReport(deviceUuids,userUuids, ReportEnum.DELETE);
             sendToDevice(deviceUuids, userUuids);
             return true;
         }
