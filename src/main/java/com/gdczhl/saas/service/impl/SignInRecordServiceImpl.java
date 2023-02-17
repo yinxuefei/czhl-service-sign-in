@@ -58,7 +58,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
         lambda.like(!StringUtils.isEmpty(name), SignInRecord::getUsername, name)
                 .eq(!StringUtils.isEmpty(taskUuid), SignInRecord::getSignTaskUuid, taskUuid)
                 .likeRight(StringUtils.hasText(areaCode), SignInRecord::getAreaCode, areaCode)
-                .eq(SignInRecord::getStatus, SignStatusEnum.SINGED);
+                .ne(SignInRecord::getStatus, SignStatusEnum.NOT_SING);
 
 
         if (Objects.nonNull(startDate) && Objects.nonNull(endDate)) {

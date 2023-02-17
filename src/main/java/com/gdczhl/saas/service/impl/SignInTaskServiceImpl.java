@@ -322,10 +322,13 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
 
     @Override
     public Map<String, SignInTask> getTasksByUuids(List<String> uuids) {
+        HashMap<String, SignInTask> result = new HashMap<>();
+        if (CollectionUtils.isEmpty(uuids)){
+            return result;
+        }
         LambdaQueryWrapper<SignInTask> eq = new LambdaQueryWrapper<SignInTask>()
                 .in(SignInTask::getUuid, uuids);
         List<SignInTask> list = list(eq);
-        HashMap<String, SignInTask> result = new HashMap<>();
         for (SignInTask signInTask : list) {
             result.put(signInTask.getUuid(), signInTask);
         }
@@ -629,7 +632,7 @@ public class SignInTaskServiceImpl extends ServiceImpl<SignInTaskMapper, SignInT
         if (StringUtils.hasText(signInTask.getDeviceUuids())) {
             deviceUuids = JSONObject.parseArray(signInTask.getDeviceUuids(), String.class);
         }
-
+        //
         if (updateById(signInTask)) {
             addOrDeleteFaceReport(deviceUuids,userUuids, ReportEnum.DELETE);
             sendToDevice(deviceUuids, userUuids);

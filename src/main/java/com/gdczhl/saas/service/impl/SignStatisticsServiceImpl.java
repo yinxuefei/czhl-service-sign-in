@@ -165,6 +165,14 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
     }
 
     @Override
+    public List<SignStatistics> getStatisticsByTaskUuid(List<String> taskUuids, LocalDate date) {
+        LambdaQueryWrapper<SignStatistics> qw = new LambdaQueryWrapper<>();
+        qw.in(SignStatistics::getTaskUuid, taskUuids)
+                .eq(SignStatistics::getCreateDate, date);
+        return list(qw);
+    }
+
+    @Override
     public void updateByUuid(SignStatistics statistics) {
         LambdaQueryWrapper<SignStatistics> eq = new LambdaQueryWrapper<SignStatistics>().eq(SignStatistics::getUuid, statistics.getUuid());
         update(statistics, eq);

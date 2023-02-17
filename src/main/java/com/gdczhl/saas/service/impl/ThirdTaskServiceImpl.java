@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -104,28 +107,45 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
 
     @Override
     public SignInInfoVo signInInfo(String uuid, LocalDateTime time, String deviceUuid) {
+        if (StringUtils.isBlank(uuid)){
+            throw new RuntimeException("机构不存在");
+        }
 
         SignInInfoVo signInInfoVo = new SignInInfoVo();
 
-        LambdaQueryWrapper<SignInRecord> between = new LambdaQueryWrapper<SignInRecord>().eq(SignInRecord::getInstitutionUuid, uuid)
-                .between(SignInRecord::getCreateTime, LocalDateTime.of(LocalDate.now(), LocalTime.MIN),
-                        LocalDateTime.of(LocalDate.now(), LocalTime.MAX))
-                .orderByDesc(SignInRecord::getCreateTime);
-        List<SignInRecord> list = signInRecordService.list(between);
+        //多个任务
+        List<SignInTask> tasks = todayTasks(time.toLocalDate(), deviceUuid);
 
-        List<String> usernames = list.stream().map(signInRecord -> {
+        List<SignInTask> signInTasks = tasks.stream().filter(signInTask -> {
+            LocalTime localTime = time.toLocalTime();
+            return localTime.isAfter(signInTask.getTaskStartTime()) && localTime.isBefore(signInTask.getTaskEndTime());
+        }).collect(Collectors.toList());
+        List<String> uuids= signInTasks.stream().map(BaseEntity::getUuid).collect(Collectors.toList());
+        List<String> statisticUuids =
+                signStatisticsService.getStatisticsByTaskUuid(uuids, time.toLocalDate()).stream().map(SignStatistics::getUuid).collect(Collectors.toList());
+
+        LambdaQueryWrapper<SignInRecord> between = new LambdaQueryWrapper<SignInRecord>()
+                .eq(org.springframework.util.StringUtils.hasText(uuid),SignInRecord::getInstitutionUuid, uuid)
+                .eq(Objects.nonNull(deviceUuid),SignInRecord::getDeviceUuid,deviceUuid)
+                .in(!CollectionUtils.isEmpty(statisticUuids),SignInRecord::getSignStatisticsUuid,statisticUuids)
+//                .ne(SignInRecord::getStatus,SignStatusEnum.NOT_SING);
+                .ne(SignInRecord::getStatus,SignStatusEnum.NOT_SING)
+                .orderByDesc(SignInRecord::getUpdateTime);
+
+        if (CollectionUtils.isEmpty(uuids)){
+            return signInInfoVo;
+        }
+
+        List<SignInRecord> list = signInRecordService.list(between);
+        Set<SignInRecord> set = ListUtil.ListToSet(list);
+        List<String> usernames = set.stream().map(signInRecord -> {
             return signInRecord.getUsername();
         }).limit(20).collect(Collectors.toList());
 
-        Map<String, SignInTask> map = signInTaskService.getTasksByUuids(list.stream().map(SignInRecord -> {
-            return SignInRecord.getSignTaskUuid();
-        }).limit(20).collect(Collectors.toList()));
-
         List<String> taskNames = new ArrayList<>();
-        map.forEach((s, signInTask) -> {
+        for (SignInTask signInTask : signInTasks) {
             taskNames.add(SignTasks.getPeriodNameResult(signInTask));
-        });
-
+        }
         signInInfoVo.setTaskNames(taskNames);
         signInInfoVo.setUsernames(usernames);
         return signInInfoVo;

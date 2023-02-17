@@ -59,6 +59,8 @@ public interface ISignStatisticsService extends IService<SignStatistics> {
      */
     SignStatistics getStatisticsByTaskUuid(String taskUuid, LocalDate date);
 
+    List<SignStatistics> getStatisticsByTaskUuid(List<String> taskUuids, LocalDate date);
+
     /**
      * 依据统计uuid更新统计
      * @param statistics
