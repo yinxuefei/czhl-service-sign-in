@@ -1,12 +1,12 @@
-package com.gdczhl.saas.controller.third;
+package com.gdczhl.saas.controller.feign;
 
 import com.alibaba.fastjson.JSONObject;
-import com.gdczhl.saas.entity.*;
 import com.gdczhl.saas.controller.external.vo.task.more.MoreConfig;
-import com.gdczhl.saas.controller.third.vo.ReportTaskVo;
-import com.gdczhl.saas.controller.third.vo.SignInInfoVo;
-import com.gdczhl.saas.controller.third.vo.DeviceSignVo;
-import com.gdczhl.saas.service.*;
+import com.gdczhl.saas.controller.feign.vo.DeviceSignVo;
+import com.gdczhl.saas.controller.feign.vo.ReportTaskVo;
+import com.gdczhl.saas.controller.feign.vo.SignInInfoVo;
+import com.gdczhl.saas.entity.SignInTask;
+import com.gdczhl.saas.service.IThirdTaskService;
 import com.gdczhl.saas.vo.ResponseVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 @Api(tags = "班牌签到")
 @Slf4j
 @RestController
-@RequestMapping("third/signIn")
-public class ThirdTaskController {
+@RequestMapping("feign/signIn")
+public class FeignTaskController {
 
     @Autowired
     private IThirdTaskService thirdTaskService;

@@ -8,8 +8,6 @@ import com.gdczhl.saas.enums.SignStatusEnum;
 import com.gdczhl.saas.service.remote.WechatRemoteService;
 import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountSendVo;
 import com.gdczhl.saas.service.remote.vo.wechat.OfficialAccountVo;
-import com.gdczhl.saas.controller.third.vo.SignInInfoVo;
-import com.gdczhl.saas.controller.third.vo.DeviceSignVo;
 import com.gdczhl.saas.service.*;
 import com.gdczhl.saas.utils.*;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
@@ -30,7 +27,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * <p>
@@ -128,7 +124,6 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                 .eq(org.springframework.util.StringUtils.hasText(uuid),SignInRecord::getInstitutionUuid, uuid)
                 .eq(Objects.nonNull(deviceUuid),SignInRecord::getDeviceUuid,deviceUuid)
                 .in(!CollectionUtils.isEmpty(statisticUuids),SignInRecord::getSignStatisticsUuid,statisticUuids)
-//                .ne(SignInRecord::getStatus,SignStatusEnum.NOT_SING);
                 .ne(SignInRecord::getStatus,SignStatusEnum.NOT_SING)
                 .orderByDesc(SignInRecord::getUpdateTime);
 
