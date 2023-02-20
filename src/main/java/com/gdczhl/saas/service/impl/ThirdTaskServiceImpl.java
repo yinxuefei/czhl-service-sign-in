@@ -106,7 +106,8 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
     @Override
     public SignInInfoVo signInInfo(String uuid, LocalDateTime time, String deviceUuid) {
         if (StringUtils.isBlank(uuid)){
-            throw new RuntimeException("机构不存在");
+           log.error("机构不存在");
+           return new SignInInfoVo();
         }
 
         SignInInfoVo signInInfoVo = new SignInInfoVo();
@@ -130,7 +131,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                 .orderByDesc(SignInRecord::getUpdateTime);
 
         if (CollectionUtils.isEmpty(uuids)){
-            return signInInfoVo;
+            return new SignInInfoVo(new ArrayList<>(), new ArrayList<>());
         }
 
         List<SignInRecord> list = signInRecordService.list(between);
