@@ -94,9 +94,9 @@ public class SwaggerConfiguration {
                 .paths(PathSelectors.ant("/**/feign/**"))
                 .build()
                 // 授权信息设置，必要的header token等认证信息
-                .securitySchemes(securitySchemes())
+//                .securitySchemes(securitySchemes())
                 // 授权信息全局应用
-                .securityContexts(securityContexts())
+//                .securityContexts(securityContexts())
                 // 支持的通讯协议集合
                 .protocols(newHashSet("https", "http"))
                 ;
