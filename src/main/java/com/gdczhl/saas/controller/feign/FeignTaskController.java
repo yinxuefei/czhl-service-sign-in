@@ -32,6 +32,7 @@ public class FeignTaskController {
     @Autowired
     private FeignTaskService feignTaskService;
 
+
     @GetMapping("todayTasks")
     @ApiOperation("当天任务计划发布")
     public ResponseVo<List<ReportTaskVo>> todayTasks(@ApiParam("日期") @RequestParam @DateTimeFormat(pattern = "yyyy-MM" +
