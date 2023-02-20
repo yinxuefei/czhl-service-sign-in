@@ -46,7 +46,7 @@ public class xxlJobTask {
     private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
-    private IThirdTaskService thirdTaskService;
+    private FeignTaskService feignTaskService;
 
     @Autowired
     private WechatRemoteService wechatRemoteService;
@@ -60,7 +60,7 @@ public class xxlJobTask {
     @XxlJob("statisticsTask")
     public void statisticsTask() {
         LocalDate now = LocalDate.now();
-        List<SignInTask> signInTasks = thirdTaskService.todayTasks(now, null);
+        List<SignInTask> signInTasks = feignTaskService.todayTasks(now, null);
         //时间过期 前一分钟统计
         for (SignInTask signInTask : signInTasks) {
 
@@ -250,7 +250,7 @@ public class xxlJobTask {
     public void createTask(SignInTask signInTask) {
         //获取所有启用,并合法的项目(未设置用户,未设置设备)
         //模拟小程序端获取数据
-        thirdTaskService.getSignStatisticsUUid(signInTask, LocalDate.now());
+        feignTaskService.getSignStatisticsUUid(signInTask, LocalDate.now());
     }
 
     private static List<String> parseJsonToList(String json) {

@@ -16,7 +16,7 @@ import java.util.List;
  * @author hkx
  * @since 2023-01-06
  */
-public interface IThirdTaskService {
+public interface FeignTaskService {
 
 
     /**

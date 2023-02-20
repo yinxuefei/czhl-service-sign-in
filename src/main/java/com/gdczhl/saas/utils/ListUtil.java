@@ -29,9 +29,10 @@ public class ListUtil {
 
     public static <T> Set<T> ListToSet(List<T> listA) {
         HashSet<T> hashSet = new HashSet<>();
-        hashSet.addAll(listA);
+        for (T t : listA) {
+            hashSet.add(t);
+        }
         listA.clear();
-
         return hashSet;
     }
 }

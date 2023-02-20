@@ -6,7 +6,7 @@ import com.gdczhl.saas.controller.feign.vo.DeviceSignVo;
 import com.gdczhl.saas.controller.feign.vo.ReportTaskVo;
 import com.gdczhl.saas.controller.feign.vo.SignInInfoVo;
 import com.gdczhl.saas.entity.SignInTask;
-import com.gdczhl.saas.service.IThirdTaskService;
+import com.gdczhl.saas.service.FeignTaskService;
 import com.gdczhl.saas.vo.ResponseVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,14 +30,14 @@ import java.util.stream.Collectors;
 public class FeignTaskController {
 
     @Autowired
-    private IThirdTaskService thirdTaskService;
+    private FeignTaskService feignTaskService;
 
     @GetMapping("todayTasks")
     @ApiOperation("当天任务计划发布")
     public ResponseVo<List<ReportTaskVo>> todayTasks(@ApiParam("日期") @RequestParam @DateTimeFormat(pattern = "yyyy-MM" +
             "-dd") LocalDate date, @ApiParam("设备uuid") String deviceUuid) {
         //拿到包含此设备的今日任务
-        List<SignInTask> signInTasks = thirdTaskService.todayTasks(date, deviceUuid);
+        List<SignInTask> signInTasks = feignTaskService.todayTasks(date, deviceUuid);
 
         //保留有效任务
         List<ReportTaskVo> list = signInTasks.stream().filter(signInTask -> {
@@ -61,7 +61,7 @@ public class FeignTaskController {
     @PostMapping("deviceSignIn")
     @ApiOperation("班牌签到")
     public ResponseVo<String> deviceSignIn(@RequestBody DeviceSignVo deviceSignVo) {
-        thirdTaskService.deviceSignIn(deviceSignVo);
+        feignTaskService.deviceSignIn(deviceSignVo);
         return ResponseVo.success();
     }
 
@@ -71,7 +71,7 @@ public class FeignTaskController {
     public ResponseVo<String> deviceSignIn(@RequestBody List<DeviceSignVo> deviceSignVos) {
 
         for (DeviceSignVo deviceSignVo : deviceSignVos) {
-            thirdTaskService.deviceSignIn(deviceSignVo);
+            feignTaskService.deviceSignIn(deviceSignVo);
         }
 
         return ResponseVo.success();
@@ -85,7 +85,7 @@ public class FeignTaskController {
                                                        "HH:mm:ss") LocalDateTime time,
                                                @ApiParam("机构uuid") String deviceUuid) {
 
-        return ResponseVo.success(thirdTaskService.signInInfo(institutionUuid, time, deviceUuid));
+        return ResponseVo.success(feignTaskService.signInInfo(institutionUuid, time, deviceUuid));
     }
 
 }

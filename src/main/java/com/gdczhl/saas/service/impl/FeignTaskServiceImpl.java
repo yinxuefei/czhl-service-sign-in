@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @Transactional
-public class ThirdTaskServiceImpl implements IThirdTaskService {
+public class FeignTaskServiceImpl implements FeignTaskService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -105,21 +105,20 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
 
     @Override
     public SignInInfoVo signInInfo(String uuid, LocalDateTime time, String deviceUuid) {
+        SignInInfoVo result = new SignInInfoVo(new ArrayList<>(), new ArrayList<>());
         if (StringUtils.isBlank(uuid)){
            log.error("机构不存在");
-           return new SignInInfoVo();
+           return result;
         }
-
         SignInInfoVo signInInfoVo = new SignInInfoVo();
-
         //多个任务
         List<SignInTask> tasks = todayTasks(time.toLocalDate(), deviceUuid);
-
         List<SignInTask> signInTasks = tasks.stream().filter(signInTask -> {
             LocalTime localTime = time.toLocalTime();
             return localTime.isAfter(signInTask.getTaskStartTime()) && localTime.isBefore(signInTask.getTaskEndTime());
         }).collect(Collectors.toList());
         List<String> uuids= signInTasks.stream().map(BaseEntity::getUuid).collect(Collectors.toList());
+
         List<String> statisticUuids =
                 signStatisticsService.getStatisticsByTaskUuid(uuids, time.toLocalDate()).stream().map(SignStatistics::getUuid).collect(Collectors.toList());
 
@@ -128,10 +127,12 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
                 .eq(Objects.nonNull(deviceUuid),SignInRecord::getDeviceUuid,deviceUuid)
                 .in(!CollectionUtils.isEmpty(statisticUuids),SignInRecord::getSignStatisticsUuid,statisticUuids)
                 .ne(SignInRecord::getStatus,SignStatusEnum.NOT_SING)
+                .between(BaseEntity::getCreateTime,LocalDateTime.of(time.toLocalDate(),LocalTime.MIN),
+                        LocalDateTime.of(time.toLocalDate(),LocalTime.MAX))
                 .orderByDesc(SignInRecord::getUpdateTime);
 
         if (CollectionUtils.isEmpty(uuids)){
-            return new SignInInfoVo(new ArrayList<>(), new ArrayList<>());
+            return result;
         }
 
         List<SignInRecord> list = signInRecordService.list(between);
@@ -192,7 +193,6 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         record.setSignTaskUuid(signInTask.getUuid());
         record.setBodyTemperature(deviceSignVo.getBodyTemperature());
         record.setBodyTemperature(deviceSignVo.getBodyTemperature());
-        record.setCreateTime(deviceSignVo.getTime());
         record.setStatus(SignStatusEnum.SINGED);
         record.setPush(false);
         record.setIsEnable(true);
@@ -203,11 +203,9 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         //个人推送
         if (signInTask.getPush()) {
             if (officialAccountVo.isBandMiniapp()) {
-                sendWechat(signInTask, user, device, officialAccountVo);
-                record.setPush(true);
+                sendWechat(signInTask, user, device, officialAccountVo,record);
             }
         }
-
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
         List<String> users = new ArrayList<>();
@@ -228,7 +226,7 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
 
 
     //个人推送
-    private void sendWechat(SignInTask signInTask, User user, Device device, OfficialAccountVo officialAccountVo) {
+    private void sendWechat(SignInTask signInTask, User user, Device device, OfficialAccountVo officialAccountVo, SignInRecord record) {
 
         OfficialAccountSendVo sendVo = new OfficialAccountSendVo();
         sendVo.setOfficialAccountUuid(officialAccountVo.getUuid());
@@ -241,7 +239,12 @@ public class ThirdTaskServiceImpl implements IThirdTaskService {
         paramsBean.setKeyword3(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm")));
         paramsBean.setRemark("祝您工作顺利");
         sendVo.setParams(paramsBean);
-        wechatRemoteService.sendListByUser(sendVo);
+        try {
+            wechatRemoteService.sendListByUser(sendVo);
+            record.setPush(true);
+        } catch (Exception e) {
+            record.setPush(false);
+        }
     }
 
 
