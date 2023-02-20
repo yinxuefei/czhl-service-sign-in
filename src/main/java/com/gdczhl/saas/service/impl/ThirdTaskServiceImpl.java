@@ -2,6 +2,8 @@ package com.gdczhl.saas.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.gdczhl.saas.controller.feign.vo.DeviceSignVo;
+import com.gdczhl.saas.controller.feign.vo.SignInInfoVo;
 import com.gdczhl.saas.entity.*;
 import com.gdczhl.saas.constant.RedisConstant;
 import com.gdczhl.saas.enums.SignStatusEnum;
