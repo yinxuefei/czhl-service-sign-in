@@ -195,7 +195,6 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         record.setBodyTemperature(deviceSignVo.getBodyTemperature());
         record.setStatus(SignStatusEnum.SINGED);
         record.setPush(false);
-        record.setIsEnable(true);
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
@@ -287,7 +286,6 @@ public class FeignTaskServiceImpl implements FeignTaskService {
                 "creator", "editor", "delete");
         signStatistics.setTaskUuid(signInTask.getUuid());
         signStatistics.setCreateDate(now);
-        signStatistics.setIsEnable(false);
         signStatistics.setInstitutionUuid(signInTask.getInstitutionUuid());
         if (Objects.isNull(signInTask.getUserUuids())){
           throw new RuntimeException("任务人员未初始化");
@@ -322,7 +320,6 @@ public class FeignTaskServiceImpl implements FeignTaskService {
             record.setUsername(user.getName());
             record.setUserUuid(user.getUuid());
             record.setStatus(SignStatusEnum.NOT_SING);
-            record.setIsEnable(false);
             signInRecordService.save(record);
             stringRedisTemplate.opsForValue().set(key, record.getUuid(),
                     JuheUtil.getDistanceTomorrowSeconds((LocalDate.now())),

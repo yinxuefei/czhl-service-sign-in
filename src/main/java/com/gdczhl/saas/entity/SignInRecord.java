@@ -77,8 +77,6 @@ public class SignInRecord extends SignInBase {
 
     private String institutionUuid;
 
-    private Boolean isEnable;
-
     private String areaCode;
 
 }

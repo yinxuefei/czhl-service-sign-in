@@ -58,8 +58,6 @@ public class SignStatistics extends SignInBase {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createDate;
 
-    //开启
-    private Boolean isEnable;
 
     //机构
     private String institutionUuid;
