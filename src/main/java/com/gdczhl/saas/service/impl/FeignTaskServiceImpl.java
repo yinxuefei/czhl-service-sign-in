@@ -198,13 +198,13 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
-        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
-        //个人推送
-        if (signInTask.getPush()) {
-            if (officialAccountVo.isBandMiniapp()) {
-                sendWechat(signInTask, user, device, officialAccountVo,record);
-            }
-        }
+//        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+//        //个人推送
+//        if (signInTask.getPush()) {
+//            if (officialAccountVo.isBandMiniapp()) {
+//                sendWechat(signInTask, user, device, officialAccountVo,record);
+//            }
+//        }
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
         List<String> users = new ArrayList<>();
@@ -289,6 +289,7 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         signStatistics.setIsEnable(false);
         signStatistics.setInstitutionUuid(signInTask.getInstitutionUuid());
         signStatistics.setAllUser(signInTask.getUserUuids());
+        signStatistics.setNotUser(signInTask.getUserUuids());
         signStatisticsService.save(signStatistics);
         stringRedisTemplate.opsForValue().set(
                 key, signStatistics.getUuid() + "&&0", JuheUtil.getDistanceTomorrowSeconds(LocalDate.now()),

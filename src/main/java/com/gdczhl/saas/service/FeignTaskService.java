@@ -49,5 +49,5 @@ public interface FeignTaskService {
      * @param now
      * @return
      */
-    public String getSignStatisticsUUid(SignInTask signInTask, LocalDate now);
+     String getSignStatisticsUUid(SignInTask signInTask, LocalDate now);
 }
