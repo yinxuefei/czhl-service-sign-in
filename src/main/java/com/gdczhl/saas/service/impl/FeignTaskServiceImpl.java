@@ -213,6 +213,8 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         }
         users.add(userUuid);
         statisticsByUuid.setAlreadyUser(JSONObject.toJSONString(users));
+        List<String> allUser = JSONObject.parseArray(statisticsByUuid.getAllUser(),String.class);
+        statisticsByUuid.setNotUser(JSONObject.toJSONString(ListUtil.difference(users,allUser)));
         signStatisticsService.updateById(statisticsByUuid);
 
         stringRedisTemplate.opsForSet().add(key, userUuid);
