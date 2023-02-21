@@ -136,10 +136,9 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         }
 
         List<SignInRecord> list = signInRecordService.list(between);
-        Set<SignInRecord> set = ListUtil.ListToSet(list);
-        List<String> usernames = set.stream().map(signInRecord -> {
-            return signInRecord.getUsername();
-        }).limit(20).collect(Collectors.toList());
+        List<String> collect = list.stream().map(SignInRecord::getUsername).collect(Collectors.toList());
+        Set<String> set = ListUtil.ListToSet(collect);
+        List<String> usernames = set.stream().limit(20).collect(Collectors.toList());
 
         List<String> taskNames = new ArrayList<>();
         for (SignInTask signInTask : signInTasks) {
