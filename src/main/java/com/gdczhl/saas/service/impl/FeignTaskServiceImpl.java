@@ -117,6 +117,7 @@ public class FeignTaskServiceImpl implements FeignTaskService {
             LocalTime localTime = time.toLocalTime();
             return localTime.isAfter(signInTask.getTaskStartTime()) && localTime.isBefore(signInTask.getTaskEndTime());
         }).collect(Collectors.toList());
+
         List<String> uuids= signInTasks.stream().map(BaseEntity::getUuid).collect(Collectors.toList());
 
         List<String> statisticUuids =
@@ -124,7 +125,6 @@ public class FeignTaskServiceImpl implements FeignTaskService {
 
         LambdaQueryWrapper<SignInRecord> between = new LambdaQueryWrapper<SignInRecord>()
                 .eq(org.springframework.util.StringUtils.hasText(uuid),SignInRecord::getInstitutionUuid, uuid)
-                .eq(Objects.nonNull(deviceUuid),SignInRecord::getDeviceUuid,deviceUuid)
                 .in(!CollectionUtils.isEmpty(statisticUuids),SignInRecord::getSignStatisticsUuid,statisticUuids)
                 .ne(SignInRecord::getStatus,SignStatusEnum.NOT_SING)
                 .between(BaseEntity::getCreateTime,LocalDateTime.of(time.toLocalDate(),LocalTime.MIN),
