@@ -116,8 +116,7 @@ public class SignInRecordServiceImpl extends ServiceImpl<SignInRecordMapper, Sig
                 .eq(StringUtils.hasText(uuid), SignInRecord::getSignStatisticsUuid, uuid)
                 .like(StringUtils.hasText(name), SignInRecord::getUsername, name)
                 .eq(Objects.nonNull(status), SignInRecord::getStatus, status)
-                .eq(StringUtils.hasText(taskUuid), SignInRecord::getSignTaskUuid, taskUuid)
-                .eq(SignInRecord::getIsEnable, true);
+                .eq(StringUtils.hasText(taskUuid), SignInRecord::getSignTaskUuid, taskUuid);
 
         if (startDate != null && endDate != null) {
             qw.between(SignInRecord::getCreateTime,

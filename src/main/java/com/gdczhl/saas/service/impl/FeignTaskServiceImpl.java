@@ -199,13 +199,13 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
-        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
-        //个人推送
-        if (signInTask.getPush()) {
-            if (officialAccountVo.isBandMiniapp()) {
-                sendWechat(signInTask, user, device, officialAccountVo,record);
-            }
-        }
+//        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+//        //个人推送
+//        if (signInTask.getPush()) {
+//            if (officialAccountVo.isBandMiniapp()) {
+//                sendWechat(signInTask, user, device, officialAccountVo,record);
+//            }
+//        }
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
         List<String> users = new ArrayList<>();

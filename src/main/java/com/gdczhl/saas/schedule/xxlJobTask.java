@@ -88,22 +88,22 @@ public class xxlJobTask {
                     continue;
                 }
                 List<SignInRecord> signInRecordList = signInRecordService.getListByStatisticsUuid(statisticsUuid);
-                HashSet<String> alreadyUser = new HashSet<>();
-                HashSet<String> notUser = new HashSet<>();
-                for (SignInRecord record : signInRecordList) {
-                    if (record.getStatus().equals(SignStatusEnum.NOT_SING)) {
-                        notUser.add(record.getUserUuid());
-                    }
-                    if (record.getStatus().equals(SignStatusEnum.RESIGN)) {
-                        alreadyUser.add(record.getUserUuid());
-                    }
-                    record.setIsEnable(true);
-                    signInRecordService.updateByUuid(record);
-                }
+//                HashSet<String> alreadyUser = new HashSet<>();
+//                HashSet<String> notUser = new HashSet<>();
+//                for (SignInRecord record : signInRecordList) {
+//                    if (record.getStatus().equals(SignStatusEnum.NOT_SING)) {
+//                        notUser.add(record.getUserUuid());
+//                    }
+//                    if (record.getStatus().equals(SignStatusEnum.RESIGN)) {
+//                        alreadyUser.add(record.getUserUuid());
+//                        record.setIsEnable(true);
+//                    }
+//                    signInRecordService.updateByUuid(record);
+//                }
                 SignStatistics statistics = signStatisticsService.getStatisticsByUuid(statisticsUuid);
-                statistics.setAlreadyUser(JSONObject.toJSONString(alreadyUser));
-                statistics.setNotUser(JSONObject.toJSONString(notUser));
-                statistics.setIsEnable(true);
+//                statistics.setAlreadyUser(JSONObject.toJSONString(alreadyUser));
+//                statistics.setNotUser(JSONObject.toJSONString(notUser));
+//                statistics.setIsEnable(true);
 
                 OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
                 //负责人推送

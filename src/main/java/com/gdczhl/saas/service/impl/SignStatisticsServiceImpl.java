@@ -90,8 +90,7 @@ public class SignStatisticsServiceImpl extends ServiceImpl<SignStatisticsMapper,
         }
 
 
-        qw.eq(SignStatistics::getIsEnable, true)
-                .eq(SignStatistics::getInstitutionUuid,
+        qw.eq(SignStatistics::getInstitutionUuid,
                         ContextCache.getInstitutionUuid());
     }
 
