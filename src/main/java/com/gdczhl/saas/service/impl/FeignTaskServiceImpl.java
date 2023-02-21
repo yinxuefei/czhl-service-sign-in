@@ -127,6 +127,7 @@ public class FeignTaskServiceImpl implements FeignTaskService {
                 .eq(org.springframework.util.StringUtils.hasText(uuid),SignInRecord::getInstitutionUuid, uuid)
                 .in(!CollectionUtils.isEmpty(statisticUuids),SignInRecord::getSignStatisticsUuid,statisticUuids)
                 .ne(SignInRecord::getStatus,SignStatusEnum.NOT_SING)
+                .eq(!StringUtils.isEmpty(deviceUuid),SignInRecord::getDeviceUuid,deviceUuid)
                 .between(BaseEntity::getCreateTime,LocalDateTime.of(time.toLocalDate(),LocalTime.MIN),
                         LocalDateTime.of(time.toLocalDate(),LocalTime.MAX))
                 .orderByDesc(SignInRecord::getUpdateTime);
@@ -198,13 +199,13 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
-//        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
-//        //个人推送
-//        if (signInTask.getPush()) {
-//            if (officialAccountVo.isBandMiniapp()) {
-//                sendWechat(signInTask, user, device, officialAccountVo,record);
-//            }
-//        }
+        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+        //个人推送
+        if (signInTask.getPush()) {
+            if (officialAccountVo.isBandMiniapp()) {
+                sendWechat(signInTask, user, device, officialAccountVo,record);
+            }
+        }
         SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
         String alreadyUser = statisticsByUuid.getAlreadyUser();
         List<String> users = new ArrayList<>();
@@ -288,6 +289,9 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         signStatistics.setCreateDate(now);
         signStatistics.setIsEnable(false);
         signStatistics.setInstitutionUuid(signInTask.getInstitutionUuid());
+        if (Objects.isNull(signInTask.getUserUuids())){
+          throw new RuntimeException("任务人员未初始化");
+        }
         signStatistics.setAllUser(signInTask.getUserUuids());
         signStatistics.setNotUser(signInTask.getUserUuids());
         signStatisticsService.save(signStatistics);
