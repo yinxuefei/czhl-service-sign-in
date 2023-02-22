@@ -198,23 +198,24 @@ public class FeignTaskServiceImpl implements FeignTaskService {
         record.setUuid(record.getUuid());
         record.setInstitutionUuid(signInTask.getInstitutionUuid());
 
-//        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
-//        //个人推送
-//        if (signInTask.getPush()) {
-//            if (officialAccountVo.isBandMiniapp()) {
-//                sendWechat(signInTask, user, device, officialAccountVo,record);
-//            }
-//        }
-        SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
-        String alreadyUser = statisticsByUuid.getAlreadyUser();
-        List<String> users = new ArrayList<>();
-        if (!StringUtils.isBlank(alreadyUser)) {
-            users = JSONObject.parseArray(alreadyUser, String.class);
+        OfficialAccountVo officialAccountVo = SignTasks.checkHttpResponse(wechatRemoteService.get(signInTask.getInstitutionUuid()));
+        //个人推送
+        if (signInTask.getPush()) {
+            if (officialAccountVo.isBandMiniapp()) {
+                sendWechat(signInTask, user, device, officialAccountVo,record);
+            }
         }
-        users.add(userUuid);
-        statisticsByUuid.setAlreadyUser(JSONObject.toJSONString(users));
+
+        SignStatistics statisticsByUuid = signStatisticsService.getStatisticsByUuid(signStatisticsUUid);
+        String alreadyUserJson = statisticsByUuid.getAlreadyUser();
+        List<String> alreadyUserList = new ArrayList<>();
+        if (!StringUtils.isBlank(alreadyUserJson)) {
+            alreadyUserList = JSONObject.parseArray(alreadyUserJson, String.class);
+        }
+        alreadyUserList.add(userUuid);
+        statisticsByUuid.setAlreadyUser(JSONObject.toJSONString(alreadyUserList));
         List<String> allUser = JSONObject.parseArray(statisticsByUuid.getAllUser(),String.class);
-        statisticsByUuid.setNotUser(JSONObject.toJSONString(ListUtil.difference(users,allUser)));
+        statisticsByUuid.setNotUser(JSONObject.toJSONString(ListUtil.difference(alreadyUserList,allUser)));
         signStatisticsService.updateById(statisticsByUuid);
 
         stringRedisTemplate.opsForSet().add(key, userUuid);
